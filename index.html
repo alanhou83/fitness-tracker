@@ -3,50 +3,129 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>训练记录</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0e0e0e;--surface:#1a1a1a;--surface2:#242424;--border:#2e2e2e;--text:#f0ede8;--muted:#666;--dim:#444;--accent:#c8f060;--accent-dim:rgba(200,240,96,0.12);--accent-border:rgba(200,240,96,0.3);--orange:#f0a060;--blue:#60a8f0;--purple:#b060f0;--red:#f06060;--mono:'DM Mono',monospace;--sans:'Noto Sans SC',sans-serif;}
+:root{
+  --bg:#0e0e0e;--surface:#1a1a1a;--surface2:#242424;--border:#2e2e2e;
+  --text:#f0ede8;--muted:#666;--dim:#444;
+  --accent:#c8f060;--accent-dim:rgba(200,240,96,0.12);--accent-border:rgba(200,240,96,0.3);
+  --orange:#f0a060;--orange-dim:rgba(240,160,96,0.15);--orange-border:rgba(240,160,96,0.35);
+  --blue:#60a8f0;--purple:#b060f0;--red:#f06060;--red-dim:rgba(240,96,96,0.1);
+  --mono:'DM Mono',monospace;--sans:'Noto Sans SC',sans-serif;
+}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
-.header{padding:20px 16px 0;display:flex;align-items:flex-start;justify-content:space-between;}
+
+/* HEADER */
+.header{padding:16px 16px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
 .hdate{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:2px;}
-.htitle{font-size:22px;font-weight:700;margin-top:4px;}
-.streak-badge{display:flex;flex-direction:column;align-items:center;background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:12px;padding:8px 12px;min-width:60px;}
-.streak-badge .num{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--accent);line-height:1;}
-.streak-badge .lbl{font-size:10px;color:var(--accent);margin-top:2px;letter-spacing:1px;}
-.tabs{display:flex;gap:4px;padding:20px 16px 0;overflow-x:auto;scrollbar-width:none;}
+.htitle{font-size:20px;font-weight:700;margin-top:2px;}
+.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;}
+.streak-badge{display:flex;flex-direction:column;align-items:center;background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:10px;padding:6px 10px;min-width:54px;}
+.streak-badge .num{font-family:var(--mono);font-size:20px;font-weight:500;color:var(--accent);line-height:1;}
+.streak-badge .lbl{font-size:9px;color:var(--accent);margin-top:2px;letter-spacing:1px;}
+
+/* TOP STATS BAR */
+.top-bar{display:flex;gap:8px;padding:12px 16px 0;overflow-x:auto;scrollbar-width:none;}
+.top-bar::-webkit-scrollbar{display:none;}
+.top-stat{flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:8px;}
+.top-stat-icon{font-size:14px;}
+.top-stat-val{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--text);}
+.top-stat-lbl{font-size:10px;color:var(--muted);}
+.top-stat.warn .top-stat-val{color:var(--orange);}
+.top-stat.good .top-stat-val{color:var(--accent);}
+
+/* TABS */
+.tabs{display:flex;gap:4px;padding:14px 16px 0;overflow-x:auto;scrollbar-width:none;}
 .tabs::-webkit-scrollbar{display:none;}
-.tab{flex-shrink:0;padding:7px 16px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:13px;font-family:var(--sans);cursor:pointer;transition:all .18s;}
+.tab{flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:13px;font-family:var(--sans);cursor:pointer;transition:all .18s;}
 .tab.active{background:var(--text);color:var(--bg);border-color:var(--text);font-weight:500;}
-.page{display:none;padding:16px;}
+
+.page{display:none;padding:14px 16px;}
 .page.active{display:block;}
-/* CARDS */
-.section-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;margin-bottom:12px;overflow:hidden;}
-.section-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;user-select:none;}
+
+/* SECTION CARDS */
+.section-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;margin-bottom:10px;overflow:hidden;}
+.section-header{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;cursor:pointer;user-select:none;}
 .sdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 .sname{font-size:15px;font-weight:500;}
 .ssub{font-size:11px;color:var(--muted);margin-top:1px;}
 .schev{color:var(--dim);font-size:18px;transition:transform .2s;line-height:1;}
 .section-card.open .schev{transform:rotate(90deg);}
-.sprog{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--surface2);padding:3px 8px;border-radius:10px;}
-.sprog.has{color:var(--accent);background:var(--accent-dim);}
+.sprog{font-family:var(--mono);font-size:11px;background:var(--surface2);padding:3px 8px;border-radius:10px;color:var(--muted);}
+.sprog.p1{color:var(--orange);background:var(--orange-dim);}
+.sprog.p2{color:var(--orange);background:var(--orange-dim);}
+.sprog.done{color:var(--accent);background:var(--accent-dim);}
+.sprog.over{color:var(--accent);background:var(--accent-dim);}
 .exercise-list{border-top:1px solid var(--border);display:none;}
 .section-card.open .exercise-list{display:block;}
-.ex-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;}
+
+/* EXERCISE ITEMS */
+.ex-item{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;}
 .ex-item:last-child{border-bottom:none;}
 .ex-item:active{background:var(--surface2);}
-.ex-check{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--dim);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;}
-.ex-item.done .ex-check{background:var(--accent);border-color:var(--accent);}
-.cssvg{display:none;}
-.ex-item.done .cssvg{display:block;}
+
+/* Progress circle */
+.ex-circle{width:26px;height:26px;border-radius:50%;flex-shrink:0;position:relative;display:flex;align-items:center;justify-content:center;}
+.ex-circle svg{position:absolute;top:0;left:0;transform:rotate(-90deg);}
+.ex-circle-icon{font-size:10px;font-weight:700;position:relative;z-index:1;font-family:var(--mono);}
+
 .ex-info{flex:1;min-width:0;}
 .ex-name{font-size:14px;}
 .ex-target{font-size:11px;color:var(--muted);margin-top:2px;font-family:var(--mono);}
-.ex-btn{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;flex-shrink:0;white-space:nowrap;max-width:96px;text-align:center;overflow:hidden;text-overflow:ellipsis;}
+.ex-achievement{font-size:13px;margin-left:2px;}
+
+.ex-btn{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 8px;flex-shrink:0;white-space:nowrap;max-width:88px;text-align:center;overflow:hidden;text-overflow:ellipsis;}
+.ex-item.started .ex-btn{background:var(--orange-dim);border-color:var(--orange-border);color:var(--orange);}
 .ex-item.done .ex-btn{background:var(--accent-dim);border-color:var(--accent-border);color:var(--accent);}
+.ex-item.over .ex-btn{background:var(--accent-dim);border-color:var(--accent-border);color:var(--accent);}
+
+/* WATER WIDGET */
+.water-widget{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:10px;}
+.water-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.water-title{font-size:15px;font-weight:500;}
+.water-val{font-family:var(--mono);font-size:13px;color:var(--blue);}
+.water-track{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-bottom:10px;}
+.water-fill{height:100%;border-radius:4px;background:var(--blue);transition:width .3s;}
+.water-btns{display:flex;gap:6px;}
+.water-btn{flex:1;padding:8px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--blue);font-family:var(--mono);font-size:12px;cursor:pointer;text-align:center;transition:all .15s;}
+.water-btn:active{background:rgba(96,168,240,0.2);}
+.water-btn.minus{color:var(--muted);}
+
+/* DAILY EXTRAS */
+.daily-extras{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:10px;}
+.extras-title{font-size:13px;color:var(--muted);letter-spacing:1px;margin-bottom:12px;}
+.extras-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.extra-input-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;}
+.extra-input-label{font-size:11px;color:var(--muted);margin-bottom:6px;}
+.extra-input-row{display:flex;align-items:center;gap:6px;}
+.extra-num-input{background:transparent;border:none;color:var(--accent);font-family:var(--mono);font-size:20px;font-weight:500;width:100%;-moz-appearance:textfield;}
+.extra-num-input::-webkit-outer-spin-button,.extra-num-input::-webkit-inner-spin-button{-webkit-appearance:none;}
+.extra-num-input:focus{outline:none;}
+.extra-unit{font-size:11px;color:var(--muted);}
+
+/* STRETCH/ENERGY */
+.stretch-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.s-toggle{width:44px;height:26px;border-radius:13px;background:var(--surface2);border:1px solid var(--border);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.s-toggle.on{background:var(--accent);border-color:var(--accent);}
+.s-toggle::after{content:'';position:absolute;width:20px;height:20px;background:var(--muted);border-radius:50%;top:2px;left:2px;transition:all .2s;}
+.s-toggle.on::after{left:20px;background:var(--bg);}
+.s-label{font-size:14px;color:var(--muted);}
+.s-toggle.on~.s-label{color:var(--text);}
+.energy-row{display:flex;gap:6px;margin-bottom:12px;}
+.energy-btn{flex:1;padding:8px 4px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;cursor:pointer;text-align:center;transition:all .15s;}
+.energy-btn.selected{background:var(--accent-dim);border-color:var(--accent-border);color:var(--accent);}
+.note-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:var(--sans);font-size:14px;resize:none;height:54px;margin-bottom:12px;}
+.note-input:focus{outline:none;border-color:var(--dim);}
+.note-input::placeholder{color:var(--dim);}
+.save-btn{width:100%;padding:12px;border-radius:12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;}
+.save-btn:active{background:var(--border);}
+
 /* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:flex-end;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:flex-end;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s;}
 .modal-overlay.open{opacity:1;pointer-events:all;}
 .modal{background:var(--surface);border-radius:24px 24px 0 0;padding:20px 20px 44px;width:100%;max-width:500px;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1);border-top:1px solid var(--border);}
 .modal-overlay.open .modal{transform:translateY(0);}
@@ -59,7 +138,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .set-btn{flex:1;padding:10px 6px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:var(--mono);font-size:13px;cursor:pointer;text-align:center;transition:all .15s;}
 .set-btn.selected{background:var(--accent-dim);border-color:var(--accent-border);color:var(--accent);}
 .num-row{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
-.num-btn{width:42px;height:42px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;user-select:none;transition:background .12s;}
+.num-btn{width:42px;height:42px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;user-select:none;}
 .num-btn:active{background:var(--border);}
 .num-iw{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;}
 .num-input{background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--accent);font-family:var(--mono);font-size:28px;font-weight:500;text-align:center;width:90px;padding:6px 0;-moz-appearance:textfield;}
@@ -70,38 +149,33 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .run-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-family:var(--mono);font-size:16px;text-align:center;-moz-appearance:textfield;}
 .run-input::-webkit-outer-spin-button,.run-input::-webkit-inner-spin-button{-webkit-appearance:none;}
 .run-input:focus{outline:none;border-color:var(--accent);}
-.run-lbl{font-size:11px;color:var(--muted);text-align:center;margin-top:3px;}
-.note-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:var(--sans);font-size:14px;resize:none;height:54px;margin-bottom:14px;}
-.note-input:focus{outline:none;border-color:var(--dim);}
-.note-input::placeholder{color:var(--dim);}
+.modal-note{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:var(--sans);font-size:14px;resize:none;height:54px;margin-bottom:14px;}
+.modal-note:focus{outline:none;border-color:var(--dim);}
+.modal-note::placeholder{color:var(--dim);}
 .mconfirm{width:100%;padding:14px;border-radius:12px;background:var(--accent);color:var(--bg);border:none;font-family:var(--sans);font-size:15px;font-weight:700;cursor:pointer;}
 .mconfirm:active{opacity:.85;}
-/* stretch/energy */
-.stretch-row{display:flex;align-items:center;gap:12px;padding:14px 16px;}
-.s-toggle{width:44px;height:26px;border-radius:13px;background:var(--surface2);border:1px solid var(--border);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
-.s-toggle.on{background:var(--accent);border-color:var(--accent);}
-.s-toggle::after{content:'';position:absolute;width:20px;height:20px;background:var(--muted);border-radius:50%;top:2px;left:2px;transition:all .2s;}
-.s-toggle.on::after{left:20px;background:var(--bg);}
-.s-label{font-size:14px;color:var(--muted);}
-.s-toggle.on~.s-label{color:var(--text);}
-.energy-row{display:flex;gap:6px;margin-bottom:10px;}
-.energy-btn{flex:1;padding:8px 4px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;cursor:pointer;text-align:center;transition:all .15s;}
-.energy-btn.selected{background:var(--accent-dim);border-color:var(--accent-border);color:var(--accent);}
-.save-btn{width:100%;padding:13px;border-radius:12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;}
-.save-btn:active{background:var(--border);}
+
+/* HISTORY DETAIL MODAL */
+.hdetail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;opacity:0;pointer-events:none;transition:opacity .2s;overflow-y:auto;}
+.hdetail-overlay.open{opacity:1;pointer-events:all;}
+.hdetail{background:var(--bg);min-height:100vh;padding:20px 16px 60px;}
+.hdetail-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.hdetail-back{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;color:var(--muted);cursor:pointer;}
+.hdetail-date{font-family:var(--mono);font-size:14px;color:var(--accent);}
+
 /* SUMMARY */
-.sum-section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;}
+.sum-section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:10px;}
 .sum-title{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-family:var(--mono);margin-bottom:14px;}
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .stat-box{background:var(--surface2);border-radius:12px;padding:12px;}
-.stat-box .sv{font-family:var(--mono);font-size:26px;font-weight:500;color:var(--accent);line-height:1;}
+.stat-box .sv{font-family:var(--mono);font-size:24px;font-weight:500;color:var(--accent);line-height:1;}
 .stat-box .sl{font-size:11px;color:var(--muted);margin-top:4px;}
-/* heatmap */
 .heatmap{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:8px;}
-.hm-cell{aspect-ratio:1;border-radius:3px;background:var(--surface2);}
-.hm-cell.l1{background:rgba(200,240,96,.25);}
-.hm-cell.l2{background:rgba(200,240,96,.5);}
-.hm-cell.l3{background:rgba(200,240,96,.75);}
+.hm-cell{aspect-ratio:1;border-radius:3px;background:var(--surface2);cursor:pointer;transition:opacity .15s;}
+.hm-cell:active{opacity:.7;}
+.hm-cell.l1{background:rgba(200,240,96,.2);}
+.hm-cell.l2{background:rgba(200,240,96,.45);}
+.hm-cell.l3{background:rgba(200,240,96,.7);}
 .hm-cell.l4{background:#c8f060;}
 .hm-cell.today{outline:2px solid var(--accent);outline-offset:1px;}
 .hm-labels{display:flex;justify-content:space-between;margin-bottom:8px;}
@@ -110,71 +184,99 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .hm-leg-lbl{font-size:10px;color:var(--dim);}
 .hm-leg-cells{display:flex;gap:3px;}
 .hm-leg-cell{width:10px;height:10px;border-radius:2px;}
-/* week chart */
 .week-chart{display:flex;align-items:flex-end;gap:5px;height:70px;margin-bottom:6px;}
 .wbar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;}
-.wbar{width:100%;border-radius:3px 3px 0 0;background:var(--surface2);min-height:3px;position:relative;}
+.wbar{width:100%;border-radius:3px 3px 0 0;background:var(--surface2);min-height:3px;}
 .wbar.has{background:var(--accent);opacity:.55;}
 .wbar.today{opacity:1;}
 .wday{font-family:var(--mono);font-size:10px;color:var(--dim);}
 .wday.today{color:var(--accent);}
-/* section breakdown */
-.sec-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;}
+.sec-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .sec-box{border-radius:12px;padding:12px;background:var(--surface2);}
 .sec-box-name{font-size:11px;color:var(--muted);margin-bottom:6px;}
-.sec-box-val{font-family:var(--mono);font-size:20px;font-weight:500;line-height:1;}
+.sec-box-val{font-family:var(--mono);font-size:22px;font-weight:500;line-height:1;}
 .sec-box-sub{font-size:10px;color:var(--muted);margin-top:2px;}
-/* week compare */
 .compare-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
 .compare-lbl{font-size:12px;color:var(--muted);min-width:32px;}
 .compare-track{flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;}
 .compare-fill{height:100%;border-radius:4px;}
 .compare-val{font-family:var(--mono);font-size:12px;color:var(--muted);min-width:36px;text-align:right;}
-/* trend */
-.trend-select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;color:var(--text);font-family:var(--sans);font-size:12px;margin-bottom:12px;width:100%;}
+.trend-select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-family:var(--sans);font-size:12px;margin-bottom:12px;width:100%;}
 .trend-select:focus{outline:none;}
 .trend-chart{height:80px;position:relative;margin-bottom:4px;}
-.trend-line{width:100%;height:100%;}
-/* bar row */
 .bar-row{margin-bottom:10px;}
 .bar-row-top{display:flex;justify-content:space-between;margin-bottom:4px;}
 .bar-row-name{font-size:13px;}
 .bar-row-count{font-family:var(--mono);font-size:12px;color:var(--muted);}
 .bar-track{height:5px;background:var(--surface2);border-radius:3px;}
 .bar-fill{height:100%;border-radius:3px;background:var(--accent);opacity:.75;}
-/* state trend */
 .state-dots{display:flex;align-items:flex-end;gap:4px;height:50px;margin-bottom:6px;}
 .state-dot-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;}
-.state-dot{width:8px;height:8px;border-radius:50%;background:var(--surface2);}
-.state-dot.e1{background:#f06060;}
-.state-dot.e2{background:var(--orange);}
-.state-dot.e3{background:var(--blue);}
-.state-dot.e4{background:var(--accent);}
-/* HISTORY */
-.history-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;}
-.hdate{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:8px;}
+.state-dot{border-radius:50%;background:var(--surface2);}
+
+/* HISTORY LIST */
+.history-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:border-color .15s;}
+.history-item:active{border-color:var(--accent);}
+.history-date-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.hdate-lbl{font-family:var(--mono);font-size:11px;color:var(--muted);}
+.hdate-arr{font-size:12px;color:var(--dim);}
 .htags{display:flex;flex-wrap:wrap;gap:5px;}
 .htag{font-size:11px;padding:3px 8px;border-radius:6px;font-family:var(--mono);}
 .htag.ex{background:var(--accent-dim);color:var(--accent);}
 .htag.info{background:var(--surface2);color:var(--muted);}
 .hnote{font-size:12px;color:var(--dim);margin-top:6px;font-style:italic;}
+
+/* SETTINGS */
+.exp-btn{width:100%;padding:13px;border-radius:12px;background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border);font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;display:block;text-align:center;}
+.exp-btn:active{background:var(--accent);color:var(--bg);}
+.step-row{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;}
+.step-num{width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--bg);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-txt{font-size:13px;color:var(--text);line-height:1.7;}
+
 .empty-state{text-align:center;padding:48px 20px;color:var(--muted);font-size:13px;line-height:2;}
 .bottom-safe{height:24px;}
-.exp-btn{width:100%;padding:13px;border-radius:12px;background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border);font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;}
-.exp-btn:active{background:var(--accent);color:var(--bg);}
+.divider{height:1px;background:var(--border);margin:14px 0;}
 </style>
 </head>
 <body>
+
 <div class="header">
   <div>
     <div class="hdate" id="header-date"></div>
     <div class="htitle">训练记录</div>
   </div>
-  <div class="streak-badge">
-    <div class="num" id="streak-num">0</div>
-    <div class="lbl">连续天</div>
+  <div class="header-right">
+    <div class="streak-badge">
+      <div class="num" id="streak-num">0</div>
+      <div class="lbl">连续天</div>
+    </div>
   </div>
 </div>
+
+<!-- TOP STATS BAR -->
+<div class="top-bar" id="top-bar">
+  <div class="top-stat" id="ts-cal">
+    <div class="top-stat-icon">🔥</div>
+    <div><div class="top-stat-val" id="ts-cal-val">0 kcal</div><div class="top-stat-lbl">训练消耗</div></div>
+  </div>
+  <div class="top-stat" id="ts-water">
+    <div class="top-stat-icon">💧</div>
+    <div><div class="top-stat-val" id="ts-water-val">0/2000ml</div><div class="top-stat-lbl">饮水</div></div>
+  </div>
+  <div class="top-stat" id="ts-weight">
+    <div class="top-stat-icon">⚖️</div>
+    <div><div class="top-stat-val" id="ts-weight-val">--kg</div><div class="top-stat-lbl">体重</div></div>
+  </div>
+  <div class="top-stat" id="ts-sleep">
+    <div class="top-stat-icon">😴</div>
+    <div><div class="top-stat-val" id="ts-sleep-val">--h</div><div class="top-stat-lbl">睡眠</div></div>
+  </div>
+  <div class="top-stat" id="ts-kcal-diff">
+    <div class="top-stat-icon">⚡</div>
+    <div><div class="top-stat-val" id="ts-diff-val">--</div><div class="top-stat-lbl" id="ts-diff-lbl">热量差</div></div>
+  </div>
+</div>
+
 <div class="tabs">
   <div class="tab active" onclick="switchTab('today',this)">今日打卡</div>
   <div class="tab" onclick="switchTab('summary',this)">汇总统计</div>
@@ -184,101 +286,227 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 
 <!-- TODAY -->
 <div class="page active" id="page-today">
-  <div class="section-card open" data-section="cardio">
+
+  <!-- 热身心肺 -->
+  <div class="section-card open" data-section="cardio" data-target-sets="5">
     <div class="section-header" onclick="toggleSec(this)">
       <div style="display:flex;align-items:center;gap:10px">
         <div class="sdot" style="background:var(--orange)"></div>
-        <div><div class="sname">热身 / 心肺</div><div class="ssub">任选完成</div></div>
+        <div><div class="sname">热身 / 心肺</div><div class="ssub">部位目标 5组</div></div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <div class="sprog" id="prog-cardio">0组</div><div class="schev">›</div>
       </div>
     </div>
-    <div class="exercise-list" id="list-cardio">
-      <div class="ex-item" data-id="jumping_jack" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">开合跳</div><div class="ex-target" id="acc-jumping_jack">目标 3组×20个</div></div><div class="ex-btn" id="btn-jumping_jack">+记录</div></div>
-      <div class="ex-item" data-id="high_knee_clap" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">高抬腿跨下击掌</div><div class="ex-target" id="acc-high_knee_clap">目标 3组×20个</div></div><div class="ex-btn" id="btn-high_knee_clap">+记录</div></div>
-      <div class="ex-item" data-id="high_knee_twist" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">高抬腿 对侧手肘</div><div class="ex-target" id="acc-high_knee_twist">目标 3组×20个</div></div><div class="ex-btn" id="btn-high_knee_twist">+记录</div></div>
-      <div class="ex-item" data-id="high_knee_side" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">侧面高抬腿 同侧手肘</div><div class="ex-target" id="acc-high_knee_side">目标 3组×20个</div></div><div class="ex-btn" id="btn-high_knee_side">+记录</div></div>
-      <div class="ex-item" data-id="running" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">跑步</div><div class="ex-target" id="acc-running">记录时间/距离</div></div><div class="ex-btn" id="btn-running">+记录</div></div>
+    <div class="exercise-list">
+      <div class="ex-item" data-id="jumping_jack" onclick="openModal(this)">
+        <div class="ex-circle" id="circ-jumping_jack"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-jumping_jack" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-jumping_jack" style="color:var(--dim)">○</span></div>
+        <div class="ex-info"><div class="ex-name">开合跳 <span class="ex-achievement" id="ach-jumping_jack"></span></div><div class="ex-target" id="acc-jumping_jack">目标 3组×20个</div></div>
+        <div class="ex-btn" id="btn-jumping_jack">+记录</div>
+      </div>
+      <div class="ex-item" data-id="high_knee_clap" onclick="openModal(this)">
+        <div class="ex-circle" id="circ-high_knee_clap"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-high_knee_clap" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-high_knee_clap" style="color:var(--dim)">○</span></div>
+        <div class="ex-info"><div class="ex-name">高抬腿跨下击掌 <span class="ex-achievement" id="ach-high_knee_clap"></span></div><div class="ex-target" id="acc-high_knee_clap">目标 3组×20个</div></div>
+        <div class="ex-btn" id="btn-high_knee_clap">+记录</div>
+      </div>
+      <div class="ex-item" data-id="high_knee_twist" onclick="openModal(this)">
+        <div class="ex-circle" id="circ-high_knee_twist"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-high_knee_twist" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-high_knee_twist" style="color:var(--dim)">○</span></div>
+        <div class="ex-info"><div class="ex-name">高抬腿 对侧手肘 <span class="ex-achievement" id="ach-high_knee_twist"></span></div><div class="ex-target" id="acc-high_knee_twist">目标 3组×20个</div></div>
+        <div class="ex-btn" id="btn-high_knee_twist">+记录</div>
+      </div>
+      <div class="ex-item" data-id="high_knee_side" onclick="openModal(this)">
+        <div class="ex-circle" id="circ-high_knee_side"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-high_knee_side" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-high_knee_side" style="color:var(--dim)">○</span></div>
+        <div class="ex-info"><div class="ex-name">侧面高抬腿 同侧手肘 <span class="ex-achievement" id="ach-high_knee_side"></span></div><div class="ex-target" id="acc-high_knee_side">目标 3组×20个</div></div>
+        <div class="ex-btn" id="btn-high_knee_side">+记录</div>
+      </div>
+      <div class="ex-item" data-id="running" onclick="openModal(this)">
+        <div class="ex-circle" id="circ-running"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-running" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-running" style="color:var(--dim)">○</span></div>
+        <div class="ex-info"><div class="ex-name">跑步 <span class="ex-achievement" id="ach-running"></span></div><div class="ex-target" id="acc-running">记录时间/距离</div></div>
+        <div class="ex-btn" id="btn-running">+记录</div>
+      </div>
     </div>
   </div>
-  <div class="section-card open" data-section="legs">
+
+  <!-- 腿部 -->
+  <div class="section-card open" data-section="legs" data-target-sets="5">
     <div class="section-header" onclick="toggleSec(this)">
       <div style="display:flex;align-items:center;gap:10px">
         <div class="sdot" style="background:var(--blue)"></div>
-        <div><div class="sname">腿部训练</div><div class="ssub">任选完成</div></div>
+        <div><div class="sname">腿部训练</div><div class="ssub">部位目标 5组</div></div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <div class="sprog" id="prog-legs">0组</div><div class="schev">›</div>
       </div>
     </div>
     <div class="exercise-list">
-      <div class="ex-item" data-id="squat" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">普通深蹲</div><div class="ex-target" id="acc-squat">目标 3组×20个</div></div><div class="ex-btn" id="btn-squat">+记录</div></div>
-      <div class="ex-item" data-id="bulgarian" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">保加利亚蹲</div><div class="ex-target" id="acc-bulgarian">目标 3组×20个</div></div><div class="ex-btn" id="btn-bulgarian">+记录</div></div>
-      <div class="ex-item" data-id="lunge" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">弓箭步蹲</div><div class="ex-target" id="acc-lunge">目标 3组×20个</div></div><div class="ex-btn" id="btn-lunge">+记录</div></div>
+      <div class="ex-item" data-id="squat" onclick="openModal(this)">
+        <div class="ex-circle" id="circ-squat"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-squat" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-squat" style="color:var(--dim)">○</span></div>
+        <div class="ex-info"><div class="ex-name">普通深蹲 <span class="ex-achievement" id="ach-squat"></span></div><div class="ex-target" id="acc-squat">目标 3组×20个</div></div>
+        <div class="ex-btn" id="btn-squat">+记录</div>
+      </div>
+      <div class="ex-item" data-id="bulgarian" onclick="openModal(this)">
+        <div class="ex-circle" id="circ-bulgarian"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-bulgarian" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-bulgarian" style="color:var(--dim)">○</span></div>
+        <div class="ex-info"><div class="ex-name">保加利亚蹲 <span class="ex-achievement" id="ach-bulgarian"></span></div><div class="ex-target" id="acc-bulgarian">目标 3组×20个</div></div>
+        <div class="ex-btn" id="btn-bulgarian">+记录</div>
+      </div>
+      <div class="ex-item" data-id="lunge" onclick="openModal(this)">
+        <div class="ex-circle" id="circ-lunge"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-lunge" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-lunge" style="color:var(--dim)">○</span></div>
+        <div class="ex-info"><div class="ex-name">弓箭步蹲 <span class="ex-achievement" id="ach-lunge"></span></div><div class="ex-target" id="acc-lunge">目标 3组×20个</div></div>
+        <div class="ex-btn" id="btn-lunge">+记录</div>
+      </div>
     </div>
   </div>
-  <div class="section-card open" data-section="upper">
+
+  <!-- 上肢 -->
+  <div class="section-card open" data-section="upper" data-target-sets="5">
     <div class="section-header" onclick="toggleSec(this)">
       <div style="display:flex;align-items:center;gap:10px">
         <div class="sdot" style="background:var(--purple)"></div>
-        <div><div class="sname">上肢训练</div><div class="ssub">任选完成</div></div>
+        <div><div class="sname">上肢训练</div><div class="ssub">部位目标 5组</div></div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <div class="sprog" id="prog-upper">0组</div><div class="schev">›</div>
       </div>
     </div>
     <div class="exercise-list">
-      <div class="ex-item" data-id="pushup_incline" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">斜面俯卧撑</div><div class="ex-target" id="acc-pushup_incline">目标 3组×20个</div></div><div class="ex-btn" id="btn-pushup_incline">+记录</div></div>
-      <div class="ex-item" data-id="pushup_t" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">T字俯卧撑</div><div class="ex-target" id="acc-pushup_t">目标 3组×10个</div></div><div class="ex-btn" id="btn-pushup_t">+记录</div></div>
-      <div class="ex-item" data-id="pushup_arrow" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">箭头俯卧撑</div><div class="ex-target" id="acc-pushup_arrow">目标 3组×5个</div></div><div class="ex-btn" id="btn-pushup_arrow">+记录</div></div>
-      <div class="ex-item" data-id="pushup_elevated" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">脚垫高俯卧撑</div><div class="ex-target" id="acc-pushup_elevated">目标 3组×5个</div></div><div class="ex-btn" id="btn-pushup_elevated">+记录</div></div>
-      <div class="ex-item" data-id="pushup_pike" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">Pike俯卧撑</div><div class="ex-target" id="acc-pushup_pike">目标 3组×8个</div></div><div class="ex-btn" id="btn-pushup_pike">+记录</div></div>
+      <div class="ex-item" data-id="pushup_incline" onclick="openModal(this)">
+        <div class="ex-circle" id="circ-pushup_incline"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-pushup_incline" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-pushup_incline" style="color:var(--dim)">○</span></div>
+        <div class="ex-info"><div class="ex-name">斜面俯卧撑 <span class="ex-achievement" id="ach-pushup_incline"></span></div><div class="ex-target" id="acc-pushup_incline">目标 3组×20个</div></div>
+        <div class="ex-btn" id="btn-pushup_incline">+记录</div>
+      </div>
+      <div class="ex-item" data-id="pushup_t" onclick="openModal(this)">
+        <div class="ex-circle" id="circ-pushup_t"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-pushup_t" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-pushup_t" style="color:var(--dim)">○</span></div>
+        <div class="ex-info"><div class="ex-name">T字俯卧撑 <span class="ex-achievement" id="ach-pushup_t"></span></div><div class="ex-target" id="acc-pushup_t">目标 3组×10个</div></div>
+        <div class="ex-btn" id="btn-pushup_t">+记录</div>
+      </div>
+      <div class="ex-item" data-id="pushup_arrow" onclick="openModal(this)">
+        <div class="ex-circle" id="circ-pushup_arrow"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-pushup_arrow" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-pushup_arrow" style="color:var(--dim)">○</span></div>
+        <div class="ex-info"><div class="ex-name">箭头俯卧撑 <span class="ex-achievement" id="ach-pushup_arrow"></span></div><div class="ex-target" id="acc-pushup_arrow">目标 3组×5个</div></div>
+        <div class="ex-btn" id="btn-pushup_arrow">+记录</div>
+      </div>
+      <div class="ex-item" data-id="pushup_elevated" onclick="openModal(this)">
+        <div class="ex-circle" id="circ-pushup_elevated"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-pushup_elevated" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-pushup_elevated" style="color:var(--dim)">○</span></div>
+        <div class="ex-info"><div class="ex-name">脚垫高俯卧撑 <span class="ex-achievement" id="ach-pushup_elevated"></span></div><div class="ex-target" id="acc-pushup_elevated">目标 3组×5个</div></div>
+        <div class="ex-btn" id="btn-pushup_elevated">+记录</div>
+      </div>
+      <div class="ex-item" data-id="pushup_pike" onclick="openModal(this)">
+        <div class="ex-circle" id="circ-pushup_pike"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-pushup_pike" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-pushup_pike" style="color:var(--dim)">○</span></div>
+        <div class="ex-info"><div class="ex-name">Pike俯卧撑 <span class="ex-achievement" id="ach-pushup_pike"></span></div><div class="ex-target" id="acc-pushup_pike">目标 3组×8个</div></div>
+        <div class="ex-btn" id="btn-pushup_pike">+记录</div>
+      </div>
     </div>
   </div>
-  <div class="section-card open" data-section="core">
+
+  <!-- 核心 -->
+  <div class="section-card open" data-section="core" data-target-sets="5">
     <div class="section-header" onclick="toggleSec(this)">
       <div style="display:flex;align-items:center;gap:10px">
         <div class="sdot" style="background:var(--accent)"></div>
-        <div><div class="sname">核心训练</div><div class="ssub">任选完成</div></div>
+        <div><div class="sname">核心训练</div><div class="ssub">部位目标 5组</div></div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <div class="sprog" id="prog-core">0组</div><div class="schev">›</div>
       </div>
     </div>
     <div class="exercise-list">
-      <div class="ex-item" data-id="plank" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">平板支撑</div><div class="ex-target" id="acc-plank">目标 3组×60秒</div></div><div class="ex-btn" id="btn-plank">+记录</div></div>
-      <div class="ex-item" data-id="bench_v" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">凳子悬空 V字支撑</div><div class="ex-target" id="acc-bench_v">目标 3组×60秒</div></div><div class="ex-btn" id="btn-bench_v">+记录</div></div>
-      <div class="ex-item" data-id="bench_scissor" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">凳子悬空 剪刀腿</div><div class="ex-target" id="acc-bench_scissor">目标 3组×20个</div></div><div class="ex-btn" id="btn-bench_scissor">+记录</div></div>
-      <div class="ex-item" data-id="bench_figure8" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">凳子悬空 八字绕环</div><div class="ex-target" id="acc-bench_figure8">目标 3组×20个</div></div><div class="ex-btn" id="btn-bench_figure8">+记录</div></div>
-      <div class="ex-item" data-id="bench_russian" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">凳子悬空 俄罗斯转体</div><div class="ex-target" id="acc-bench_russian">目标 3组×20个</div></div><div class="ex-btn" id="btn-bench_russian">+记录</div></div>
-      <div class="ex-item" data-id="superman" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">背肌两头起</div><div class="ex-target" id="acc-superman">目标 3组×20个</div></div><div class="ex-btn" id="btn-superman">+记录</div></div>
+      <div class="ex-item" data-id="plank" onclick="openModal(this)">
+        <div class="ex-circle" id="circ-plank"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-plank" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-plank" style="color:var(--dim)">○</span></div>
+        <div class="ex-info"><div class="ex-name">平板支撑 <span class="ex-achievement" id="ach-plank"></span></div><div class="ex-target" id="acc-plank">目标 3组×60秒</div></div>
+        <div class="ex-btn" id="btn-plank">+记录</div>
+      </div>
+      <div class="ex-item" data-id="bench_v" onclick="openModal(this)">
+        <div class="ex-circle" id="circ-bench_v"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-bench_v" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-bench_v" style="color:var(--dim)">○</span></div>
+        <div class="ex-info"><div class="ex-name">凳子悬空 V字支撑 <span class="ex-achievement" id="ach-bench_v"></span></div><div class="ex-target" id="acc-bench_v">目标 3组×60秒</div></div>
+        <div class="ex-btn" id="btn-bench_v">+记录</div>
+      </div>
+      <div class="ex-item" data-id="bench_scissor" onclick="openModal(this)">
+        <div class="ex-circle" id="circ-bench_scissor"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-bench_scissor" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-bench_scissor" style="color:var(--dim)">○</span></div>
+        <div class="ex-info"><div class="ex-name">凳子悬空 剪刀腿 <span class="ex-achievement" id="ach-bench_scissor"></span></div><div class="ex-target" id="acc-bench_scissor">目标 3组×20个</div></div>
+        <div class="ex-btn" id="btn-bench_scissor">+记录</div>
+      </div>
+      <div class="ex-item" data-id="bench_figure8" onclick="openModal(this)">
+        <div class="ex-circle" id="circ-bench_figure8"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-bench_figure8" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-bench_figure8" style="color:var(--dim)">○</span></div>
+        <div class="ex-info"><div class="ex-name">凳子悬空 八字绕环 <span class="ex-achievement" id="ach-bench_figure8"></span></div><div class="ex-target" id="acc-bench_figure8">目标 3组×20个</div></div>
+        <div class="ex-btn" id="btn-bench_figure8">+记录</div>
+      </div>
+      <div class="ex-item" data-id="bench_russian" onclick="openModal(this)">
+        <div class="ex-circle" id="circ-bench_russian"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-bench_russian" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-bench_russian" style="color:var(--dim)">○</span></div>
+        <div class="ex-info"><div class="ex-name">凳子悬空 俄罗斯转体 <span class="ex-achievement" id="ach-bench_russian"></span></div><div class="ex-target" id="acc-bench_russian">目标 3组×20个</div></div>
+        <div class="ex-btn" id="btn-bench_russian">+记录</div>
+      </div>
+      <div class="ex-item" data-id="superman" onclick="openModal(this)">
+        <div class="ex-circle" id="circ-superman"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-superman" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-superman" style="color:var(--dim)">○</span></div>
+        <div class="ex-info"><div class="ex-name">背肌两头起 <span class="ex-achievement" id="ach-superman"></span></div><div class="ex-target" id="acc-superman">目标 3组×20个</div></div>
+        <div class="ex-btn" id="btn-superman">+记录</div>
+      </div>
     </div>
   </div>
-  <div class="section-card">
+
+  <!-- 饮水 -->
+  <div class="water-widget">
+    <div class="water-header">
+      <div class="water-title">💧 今日饮水</div>
+      <div class="water-val" id="water-display">0 / 2000 ml</div>
+    </div>
+    <div class="water-track"><div class="water-fill" id="water-fill" style="width:0%"></div></div>
+    <div class="water-btns">
+      <div class="water-btn minus" onclick="addWater(-250)">−250ml</div>
+      <div class="water-btn" onclick="addWater(250)">+250ml</div>
+      <div class="water-btn" onclick="addWater(500)">+500ml</div>
+    </div>
+  </div>
+
+  <!-- 每日数据 -->
+  <div class="daily-extras">
+    <div class="extras-title">每日数据</div>
+    <div class="extras-grid">
+      <div class="extra-input-box">
+        <div class="extra-input-label">⚖️ 今日体重</div>
+        <div class="extra-input-row">
+          <input class="extra-num-input" id="input-weight" type="number" step="0.1" placeholder="75.0" onchange="autoSave()">
+          <span class="extra-unit">kg</span>
+        </div>
+      </div>
+      <div class="extra-input-box">
+        <div class="extra-input-label">😴 睡眠时长</div>
+        <div class="extra-input-row">
+          <input class="extra-num-input" id="input-sleep" type="number" step="0.5" placeholder="7.5" onchange="autoSave()">
+          <span class="extra-unit">小时</span>
+        </div>
+      </div>
+    </div>
+
+  <!-- 饮食记录 -->
+  <div style="margin-bottom:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-size:13px;font-weight:500;color:var(--text)">🍽️ 今日饮食</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted)" id="meal-summary">未记录</div>
+    </div>
+    <div id="meal-list" style="margin-bottom:8px"></div>
+    <button class="water-btn" style="width:100%;border-radius:10px;color:var(--orange);border-color:var(--orange-border);background:var(--orange-dim)" onclick="openMealModal()">+ 记录这餐</button>
+  </div>
+
     <div class="stretch-row">
       <div class="s-toggle" id="stretch-toggle" onclick="toggleStretch()"></div>
       <span class="s-label">今日完成拉伸</span>
     </div>
-  </div>
-  <div class="section-card" style="padding:14px 16px">
-    <div style="font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:10px">今日状态</div>
+
+    <div class="extras-title" style="margin-top:4px">今日状态</div>
     <div class="energy-row">
       <div class="energy-btn" onclick="setEnergy(1,this)">😴<br>很累</div>
       <div class="energy-btn" onclick="setEnergy(2,this)">😐<br>一般</div>
       <div class="energy-btn" onclick="setEnergy(3,this)">💪<br>不错</div>
       <div class="energy-btn" onclick="setEnergy(4,this)">🔥<br>极佳</div>
     </div>
-    <textarea class="note-input" id="day-note" placeholder="今天感觉怎样...（可选）"></textarea>
-    <button class="save-btn" onclick="saveDay()">保存今日备注</button>
+    <textarea class="note-input" id="day-note" placeholder="今天感觉怎样...（可选）" oninput="autoSave()"></textarea>
+    <button class="save-btn" onclick="saveDay()">保存今日记录</button>
   </div>
+
   <div class="bottom-safe"></div>
 </div>
 
 <!-- SUMMARY -->
 <div class="page" id="page-summary">
-
-  <!-- 核心数字 -->
   <div class="sum-section">
     <div class="sum-title">总览</div>
     <div class="stat-grid">
@@ -291,20 +519,37 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     </div>
   </div>
 
+  <!-- 体重趋势 -->
+  <div class="sum-section">
+    <div class="sum-title">体重趋势（近14天）</div>
+    <div class="trend-chart"><svg width="100%" height="80" id="weight-svg"></svg></div>
+    <div style="font-size:11px;color:var(--muted);text-align:center" id="weight-hint"></div>
+  </div>
+
+  <!-- 健康数据趋势 -->
+  <div class="sum-section">
+    <div class="sum-title">健康数据（近7天）</div>
+    <div id="health-stats"></div>
+  </div>
+
+  <!-- 营养分析 -->
+  <div class="sum-section">
+    <div class="sum-title">营养需求分析</div>
+    <div id="nutrition-analysis"></div>
+  </div>
+
   <!-- 热力图 -->
   <div class="sum-section">
-    <div class="sum-title">过去4周打卡热力图</div>
-    <div class="hm-labels">
-      <span class="hm-lbl">4周前</span><span class="hm-lbl">3周前</span><span class="hm-lbl">2周前</span><span class="hm-lbl">本周</span>
-    </div>
+    <div class="sum-title">过去4周打卡热力图 <span style="font-size:10px;color:var(--muted)">（点击查看详情）</span></div>
+    <div class="hm-labels"><span class="hm-lbl">4周前</span><span class="hm-lbl">3周前</span><span class="hm-lbl">2周前</span><span class="hm-lbl">本周</span></div>
     <div class="heatmap" id="heatmap"></div>
     <div class="hm-legend">
       <span class="hm-leg-lbl">少</span>
       <div class="hm-leg-cells">
         <div class="hm-leg-cell" style="background:var(--surface2)"></div>
-        <div class="hm-leg-cell" style="background:rgba(200,240,96,.25)"></div>
-        <div class="hm-leg-cell" style="background:rgba(200,240,96,.5)"></div>
-        <div class="hm-leg-cell" style="background:rgba(200,240,96,.75)"></div>
+        <div class="hm-leg-cell" style="background:rgba(200,240,96,.2)"></div>
+        <div class="hm-leg-cell" style="background:rgba(200,240,96,.45)"></div>
+        <div class="hm-leg-cell" style="background:rgba(200,240,96,.7)"></div>
         <div class="hm-leg-cell" style="background:#c8f060"></div>
       </div>
       <span class="hm-leg-lbl">多</span>
@@ -317,7 +562,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <div id="compare-content"></div>
   </div>
 
-  <!-- 各系列分解 -->
+  <!-- 各系列 -->
   <div class="sum-section">
     <div class="sum-title">各系列累计组数</div>
     <div class="sec-breakdown">
@@ -328,17 +573,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     </div>
   </div>
 
-  <!-- 各动作排行 -->
+  <!-- 动作排行 -->
   <div class="sum-section">
     <div class="sum-title">各动作完成组数排行</div>
     <div id="ex-stats"><div class="empty-state">暂无数据</div></div>
   </div>
 
-  <!-- 单动作进步趋势 -->
+  <!-- 单动作趋势 -->
   <div class="sum-section">
     <div class="sum-title">单动作进步趋势</div>
     <select class="trend-select" id="trend-select" onchange="renderTrend()"></select>
-    <div class="trend-chart"><svg class="trend-line" id="trend-svg"></svg></div>
+    <div class="trend-chart"><svg width="100%" height="80" id="trend-svg"></svg></div>
     <div style="font-size:11px;color:var(--muted);text-align:center" id="trend-hint">选择动作查看趋势</div>
   </div>
 
@@ -347,12 +592,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <div class="sum-title">近14天状态趋势</div>
     <div class="state-dots" id="state-dots"></div>
     <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--dim);font-family:var(--mono)" id="state-labels"></div>
-    <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
-      <span style="font-size:11px;color:var(--muted)">😴很累</span>
-      <span style="font-size:11px;color:var(--muted)">😐一般</span>
-      <span style="font-size:11px;color:var(--blue)">💪不错</span>
-      <span style="font-size:11px;color:var(--accent)">🔥极佳</span>
-    </div>
   </div>
 
   <div class="bottom-safe"></div>
@@ -360,94 +599,111 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 
 <!-- HISTORY -->
 <div class="page" id="page-history">
-  <div id="history-list"><div class="empty-state">还没有记录<br>完成第一次训练吧 💪</div></div>
+  <div id="history-list"></div>
   <div class="bottom-safe"></div>
 </div>
 
 <!-- SETTINGS -->
 <div class="page" id="page-settings">
+  <!-- 个人信息 -->
+  <div class="sum-section">
+    <div class="sum-title">个人信息</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div class="extra-input-box">
+        <div class="extra-input-label">身高（固定）</div>
+        <div class="extra-input-row">
+          <input class="extra-num-input" id="set-height" type="number" placeholder="184" onchange="saveProfile()">
+          <span class="extra-unit">cm</span>
+        </div>
+      </div>
+      <div class="extra-input-box">
+        <div class="extra-input-label">目标饮水量</div>
+        <div class="extra-input-row">
+          <input class="extra-num-input" id="set-water-goal" type="number" placeholder="2000" onchange="saveProfile()">
+          <span class="extra-unit">ml</span>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.7;background:var(--surface2);border-radius:10px;padding:10px 12px">
+      💡 体重每天在「今日打卡」页面记录，BMR和营养需求会自动用最新体重计算
+    </div>
+  </div>
 
   <!-- 添加到桌面 -->
   <div class="sum-section">
     <div class="sum-title">添加到手机桌面</div>
-    <div style="font-size:13px;color:var(--muted);line-height:1.9;margin-bottom:14px">
-      把训练记录像App一样放到桌面，随时一键打开
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <div style="display:flex;gap:12px;align-items:flex-start">
-        <div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--bg);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">1</div>
-        <div style="font-size:13px;color:var(--text);line-height:1.7">用 <strong>Safari</strong> 浏览器打开这个HTML文件（不能用Chrome）</div>
-      </div>
-      <div style="display:flex;gap:12px;align-items:flex-start">
-        <div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--bg);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">2</div>
-        <div style="font-size:13px;color:var(--text);line-height:1.7">点击底部 <strong>分享按钮</strong>（方块加箭头图标）</div>
-      </div>
-      <div style="display:flex;gap:12px;align-items:flex-start">
-        <div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--bg);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">3</div>
-        <div style="font-size:13px;color:var(--text);line-height:1.7">向下滚动找到 <strong>「添加到主屏幕」</strong></div>
-      </div>
-      <div style="display:flex;gap:12px;align-items:flex-start">
-        <div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--bg);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">4</div>
-        <div style="font-size:13px;color:var(--text);line-height:1.7">名称改为「训练记录」，点右上角 <strong>「添加」</strong> 完成</div>
-      </div>
-    </div>
-    <div style="margin-top:14px;background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--muted);line-height:1.7">
-      ⚠️ 注意：文件需先保存到手机本地（文件App），之后每次从桌面图标打开，数据一直保留
-    </div>
+    <div class="step-row"><div class="step-num">1</div><div class="step-txt">用 <strong>Safari</strong> 浏览器打开此页面</div></div>
+    <div class="step-row"><div class="step-num">2</div><div class="step-txt">点底部 <strong>分享按钮</strong>（方块加箭头）</div></div>
+    <div class="step-row"><div class="step-num">3</div><div class="step-txt">找到 <strong>「添加到主屏幕」</strong></div></div>
+    <div class="step-row"><div class="step-num">4</div><div class="step-txt">名称填「训练记录」→ 点 <strong>「添加」</strong></div></div>
   </div>
 
   <!-- 导出 -->
   <div class="sum-section">
     <div class="sum-title">导出数据</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.7">
-      建议定期导出备份，换手机或更新功能版本时可以恢复数据
-    </div>
-
+    <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.7">建议每1-2周备份一次，存入iCloud保证数据安全</div>
     <div style="margin-bottom:10px">
-      <div style="font-size:13px;font-weight:500;margin-bottom:4px">导出 JSON 格式</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">完整数据备份，可用于导入恢复</div>
+      <div style="font-size:13px;font-weight:500;margin-bottom:4px">导出 JSON 备份</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">完整数据，可导入恢复</div>
       <button class="exp-btn" onclick="exportJSON()">导出 JSON 备份文件</button>
     </div>
-
-    <div style="height:1px;background:var(--border);margin:14px 0"></div>
-
+    <div class="divider"></div>
     <div>
-      <div style="font-size:13px;font-weight:500;margin-bottom:4px">导出 CSV 格式</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">可用 Excel / Numbers 打开分析</div>
+      <div style="font-size:13px;font-weight:500;margin-bottom:4px">导出 CSV 表格</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">可用 Excel / Numbers 打开分析</div>
       <button class="exp-btn" onclick="exportCSV()">导出 CSV 数据表格</button>
-    </div>
-
-    <div style="margin-top:10px;background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--muted);line-height:1.7">
-      💡 iPhone上导出后文件会出现在「文件」App，可存入iCloud或发送给自己备份
     </div>
   </div>
 
   <!-- 导入 -->
   <div class="sum-section">
     <div class="sum-title">导入数据</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.7">
-      从之前导出的 JSON 文件恢复数据，适用于换手机或更新App版本后使用
-    </div>
-    <div style="background:rgba(240,96,96,0.08);border:1px solid rgba(240,96,96,0.2);border-radius:10px;padding:10px 12px;font-size:12px;color:#f09090;margin-bottom:14px;line-height:1.7">
-      ⚠️ 导入会覆盖当前所有数据，请确认已备份现有数据再导入
-    </div>
-    <label class="exp-btn" style="display:block;text-align:center;cursor:pointer">
-      选择 JSON 文件导入
-      <input type="file" accept=".json" onchange="importJSON(event)" style="display:none">
-    </label>
+    <div style="background:var(--red-dim);border:1px solid rgba(240,96,96,.25);border-radius:10px;padding:10px 12px;font-size:12px;color:#f09090;margin-bottom:12px;line-height:1.7">⚠️ 导入会覆盖当前所有数据，请先导出备份</div>
+    <label class="exp-btn">选择 JSON 文件导入<input type="file" accept=".json" onchange="importJSON(event)" style="display:none"></label>
     <div id="import-result" style="margin-top:10px;font-size:12px;text-align:center;min-height:18px"></div>
   </div>
 
   <!-- 数据状态 -->
   <div class="sum-section">
     <div class="sum-title">数据状态</div>
-    <div id="data-status" style="font-size:13px;color:var(--muted);line-height:1.9"></div>
+    <div id="data-status"></div>
   </div>
 
   <div class="bottom-safe"></div>
 </div>
 
-<!-- MODAL -->
+<!-- MEAL MODAL -->
+<div class="modal-overlay" id="meal-modal-overlay" onclick="closeMealOut(event)">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle">记录饮食</div>
+    <div class="macc" id="meal-modal-acc"></div>
+    <div class="mlabel">餐次</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px" id="meal-type-row">
+      <div class="set-btn" onclick="selectMealType('早餐',this)">🌅 早餐</div>
+      <div class="set-btn" onclick="selectMealType('午餐',this)">☀️ 午餐</div>
+      <div class="set-btn" onclick="selectMealType('晚餐',this)">🌙 晚餐</div>
+      <div class="set-btn" onclick="selectMealType('零食',this)">🍎 零食</div>
+      <div class="set-btn" onclick="selectMealType('加餐',this)">💪 加餐</div>
+    </div>
+    <div class="mlabel">热量（kcal）</div>
+    <div class="num-row" style="margin-bottom:14px">
+      <div class="num-btn" onclick="adjMeal('meal-kcal-input',-50,0)">−</div>
+      <div class="num-iw"><input class="num-input" id="meal-kcal-input" type="number" min="0" placeholder="0"><span class="num-unit">kcal</span></div>
+      <div class="num-btn" onclick="adjMeal('meal-kcal-input',50,0)">+</div>
+    </div>
+    <div class="mlabel">蛋白质（g）</div>
+    <div class="num-row" style="margin-bottom:14px">
+      <div class="num-btn" onclick="adjMeal('meal-protein-input',-5,0)">−</div>
+      <div class="num-iw"><input class="num-input" id="meal-protein-input" type="number" min="0" placeholder="0"><span class="num-unit">g</span></div>
+      <div class="num-btn" onclick="adjMeal('meal-protein-input',5,0)">+</div>
+    </div>
+    <textarea class="modal-note" id="meal-note" placeholder="备注（可选）：吃了什么..."></textarea>
+    <button class="mconfirm" onclick="confirmMeal()">确认记录 ✓</button>
+  </div>
+</div>
+
+<!-- EXERCISE MODAL -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeOut(event)">
   <div class="modal">
     <div class="mhandle"></div>
@@ -485,468 +741,896 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <div id="sec-run" style="display:none">
       <div class="mlabel">时长 / 距离</div>
       <div class="run-row">
-        <div><input class="run-input" id="run-min" type="number" placeholder="0" min="0"><div class="run-lbl">分钟</div></div>
-        <div><input class="run-input" id="run-km" type="number" placeholder="0.0" min="0" step="0.1"><div class="run-lbl">公里</div></div>
+        <div><input class="run-input" id="run-min" type="number" placeholder="0" min="0"><div style="font-size:11px;color:var(--muted);text-align:center;margin-top:3px">分钟</div></div>
+        <div><input class="run-input" id="run-km" type="number" placeholder="0.0" min="0" step="0.1"><div style="font-size:11px;color:var(--muted);text-align:center;margin-top:3px">公里</div></div>
       </div>
     </div>
-    <textarea class="note-input" id="modal-note" placeholder="备注（可选）"></textarea>
+    <textarea class="modal-note" id="modal-note" placeholder="备注（可选）"></textarea>
     <button class="mconfirm" onclick="confirmLog()">确认 ✓ 累加记录</button>
   </div>
 </div>
 
+<!-- HISTORY DETAIL OVERLAY -->
+<div class="hdetail-overlay" id="hdetail-overlay">
+  <div class="hdetail">
+    <div class="hdetail-header">
+      <div class="hdetail-back" onclick="closeDetail()">← 返回</div>
+      <div class="hdetail-date" id="hdetail-date"></div>
+    </div>
+    <div id="hdetail-content"></div>
+  </div>
+</div>
+
 <script>
-const EX={
-  jumping_jack:   {name:'开合跳',            section:'cardio',type:'reps',def:20,target:'3组×20个'},
-  high_knee_clap: {name:'高抬腿跨下击掌',    section:'cardio',type:'reps',def:20,target:'3组×20个'},
-  high_knee_twist:{name:'高抬腿 对侧手肘',   section:'cardio',type:'reps',def:20,target:'3组×20个'},
-  high_knee_side: {name:'侧面高抬腿 同侧手肘',section:'cardio',type:'reps',def:20,target:'3组×20个'},
-  running:        {name:'跑步',              section:'cardio',type:'run', def:0, target:'时间/距离'},
-  squat:          {name:'普通深蹲',          section:'legs',  type:'reps',def:20,target:'3组×20个'},
-  bulgarian:      {name:'保加利亚蹲',        section:'legs',  type:'reps',def:20,target:'3组×20个'},
-  lunge:          {name:'弓箭步蹲',          section:'legs',  type:'reps',def:20,target:'3组×20个'},
-  pushup_incline: {name:'斜面俯卧撑',        section:'upper', type:'reps',def:20,target:'3组×20个'},
-  pushup_t:       {name:'T字俯卧撑',         section:'upper', type:'reps',def:10,target:'3组×10个'},
-  pushup_arrow:   {name:'箭头俯卧撑',        section:'upper', type:'reps',def:5, target:'3组×5个'},
-  pushup_elevated:{name:'脚垫高俯卧撑',      section:'upper', type:'reps',def:5, target:'3组×5个'},
-  pushup_pike:    {name:'Pike俯卧撑',        section:'upper', type:'reps',def:8, target:'3组×8个'},
-  plank:          {name:'平板支撑',          section:'core',  type:'hold',def:60,target:'3组×60秒'},
-  bench_v:        {name:'凳子悬空V字支撑',   section:'core',  type:'hold',def:60,target:'3组×60秒'},
-  bench_scissor:  {name:'凳子悬空剪刀腿',    section:'core',  type:'reps',def:20,target:'3组×20个'},
-  bench_figure8:  {name:'凳子悬空八字绕环',  section:'core',  type:'reps',def:20,target:'3组×20个'},
-  bench_russian:  {name:'凳子悬空俄罗斯转体',section:'core',  type:'reps',def:20,target:'3组×20个'},
-  superman:       {name:'背肌两头起',        section:'core',  type:'reps',def:20,target:'3组×20个'},
+// ═══════════════════════════════
+// EXERCISE DEFINITIONS
+// ═══════════════════════════════
+const EX = {
+  jumping_jack:   {name:'开合跳',            section:'cardio',type:'reps',def:20,goalSets:3,goalReps:20,met:7.5},
+  high_knee_clap: {name:'高抬腿跨下击掌',    section:'cardio',type:'reps',def:20,goalSets:3,goalReps:20,met:8},
+  high_knee_twist:{name:'高抬腿 对侧手肘',   section:'cardio',type:'reps',def:20,goalSets:3,goalReps:20,met:8},
+  high_knee_side: {name:'侧面高抬腿 同侧手肘',section:'cardio',type:'reps',def:20,goalSets:3,goalReps:20,met:7.5},
+  running:        {name:'跑步',              section:'cardio',type:'run', def:0, goalSets:1,goalReps:0,met:9},
+  squat:          {name:'普通深蹲',          section:'legs',  type:'reps',def:20,goalSets:3,goalReps:20,met:5},
+  bulgarian:      {name:'保加利亚蹲',        section:'legs',  type:'reps',def:20,goalSets:3,goalReps:20,met:5.5},
+  lunge:          {name:'弓箭步蹲',          section:'legs',  type:'reps',def:20,goalSets:3,goalReps:20,met:5},
+  pushup_incline: {name:'斜面俯卧撑',        section:'upper', type:'reps',def:20,goalSets:3,goalReps:20,met:4},
+  pushup_t:       {name:'T字俯卧撑',         section:'upper', type:'reps',def:10,goalSets:3,goalReps:10,met:4.5},
+  pushup_arrow:   {name:'箭头俯卧撑',        section:'upper', type:'reps',def:5, goalSets:3,goalReps:5, met:5},
+  pushup_elevated:{name:'脚垫高俯卧撑',      section:'upper', type:'reps',def:5, goalSets:3,goalReps:5, met:5},
+  pushup_pike:    {name:'Pike俯卧撑',        section:'upper', type:'reps',def:8, goalSets:3,goalReps:8, met:4.5},
+  plank:          {name:'平板支撑',          section:'core',  type:'hold',def:60,goalSets:3,goalReps:60,met:3.5},
+  bench_v:        {name:'凳子悬空V字支撑',   section:'core',  type:'hold',def:60,goalSets:3,goalReps:60,met:4},
+  bench_scissor:  {name:'凳子悬空剪刀腿',    section:'core',  type:'reps',def:20,goalSets:3,goalReps:20,met:4},
+  bench_figure8:  {name:'凳子悬空八字绕环',  section:'core',  type:'reps',def:20,goalSets:3,goalReps:20,met:4},
+  bench_russian:  {name:'凳子悬空俄罗斯转体',section:'core',  type:'reps',def:20,goalSets:3,goalReps:20,met:4},
+  superman:       {name:'背肌两头起',        section:'core',  type:'reps',def:20,goalSets:3,goalReps:20,met:3.5},
 };
 
-let curId=null,curSets=2,todayLog={},stretchDone=false,energyLevel=0;
-const load=()=>JSON.parse(localStorage.getItem('ft_log')||'{}');
-const save=d=>localStorage.setItem('ft_log',JSON.stringify(d));
-const today=()=>new Date().toISOString().slice(0,10);
-const dateStr=d=>{const dt=new Date(d+'T00:00:00');return (dt.getMonth()+1)+'/'+(dt.getDate());};
+// ═══════════════════════════════
+// STORAGE
+// ═══════════════════════════════
+const load = () => JSON.parse(localStorage.getItem('ft_log') || '{}');
+const save = d => localStorage.setItem('ft_log', JSON.stringify(d));
+const loadProfile = () => JSON.parse(localStorage.getItem('ft_profile') || '{"height":184,"waterGoal":2000}');
+const saveProfileStore = p => localStorage.setItem('ft_profile', JSON.stringify(p));
+const today = () => new Date().toISOString().slice(0, 10);
 
-function initToday(){
-  const data=load(),t=today();
-  if(data[t]){
-    todayLog=data[t].exercises||{};
-    stretchDone=data[t].stretch||false;
-    energyLevel=data[t].energy||0;
-    document.getElementById('day-note').value=data[t].note||'';
-    if(stretchDone)document.getElementById('stretch-toggle').classList.add('on');
-    if(energyLevel)document.querySelectorAll('.energy-btn')[energyLevel-1].classList.add('selected');
-    Object.keys(todayLog).forEach(refreshItem);
-  }
-  updateAllProg();updateStreak();
-}
+let curId = null, curSets = 2;
+let todayLog = {}, waterMl = 0, stretchDone = false, energyLevel = 0;
+let todayMeals = [], curMealType = '';
 
-function refreshItem(id){
-  const log=todayLog[id];if(!log)return;
-  const item=document.querySelector(`[data-id="${id}"]`);
-  const btn=document.getElementById('btn-'+id);
-  const acc=document.getElementById('acc-'+id);
-  if(!item)return;
-  item.classList.add('done');
-  if(log.type==='run'){
-    const p=[];
-    if(log.totalMin)p.push(log.totalMin+'分钟');
-    if(log.totalKm)p.push(log.totalKm+'km');
-    if(btn)btn.textContent=p.join(' ')||'已记录';
-    if(acc)acc.textContent='累计: '+(p.join(' ')||'-');
-  }else if(log.type==='hold'){
-    if(btn)btn.textContent=log.totalSets+'组×'+Math.round(log.totalSecs/Math.max(1,log.totalSets))+'秒';
-    if(acc)acc.textContent='累计: '+log.totalSets+'组 / '+log.totalSecs+'秒';
-  }else{
-    if(btn)btn.textContent=log.totalSets+'组×'+Math.round(log.totalReps/Math.max(1,log.totalSets))+'个';
-    if(acc)acc.textContent='累计: '+log.totalSets+'组 / '+log.totalReps+'个';
-  }
-}
-
-function updateAllProg(){
-  ['cardio','legs','upper','core'].forEach(s=>{
-    let tot=0;
-    Object.values(todayLog).forEach(e=>{if(e.section===s)tot+=e.totalSets||0;});
-    const el=document.getElementById('prog-'+s);
-    if(el){el.textContent=tot+'组';el.className='sprog'+(tot>0?' has':'');}
+// ═══════════════════════════════
+// CALORIE BURN ESTIMATE
+// ═══════════════════════════════
+function calcBurnKcal(log, weightKg) {
+  let total = 0;
+  Object.entries(log).forEach(([id, e]) => {
+    const ex = EX[id]; if (!ex) return;
+    const w = weightKg || 75;
+    const met = ex.met || 4;
+    if (e.type === 'hold') {
+      total += (met * w * (e.totalSecs || 0)) / 3600;
+    } else if (e.type === 'run') {
+      total += (e.totalKm || 0) * w * 1.036;
+    } else {
+      const durationMin = (e.totalSets || 0) * 1.5;
+      total += (met * w * durationMin) / 60;
+    }
   });
+  return Math.round(total);
 }
 
-function calcStreak(data){
-  let streak=0,best=0,cur=0,d=new Date();
-  for(let i=0;i<365;i++){
-    const k=d.toISOString().slice(0,10);
-    if(data[k]&&Object.keys(data[k].exercises||{}).length>0){streak++;d.setDate(d.getDate()-1);}
-    else if(i===0){d.setDate(d.getDate()-1);}
+// ═══════════════════════════════
+// BMR & TDEE
+// ═══════════════════════════════
+function calcBMR(weightKg, heightCm) {
+  const w = weightKg || 75, h = heightCm || 184;
+  return Math.round(88.362 + 13.397 * w + 4.799 * h - 5.677 * 43);
+}
+
+// ═══════════════════════════════
+// ACHIEVEMENT LOGIC
+// ═══════════════════════════════
+function getAchievement(id, log) {
+  const ex = EX[id]; if (!ex || !log) return { status: 'none', label: '' };
+  const goalTotal = ex.goalSets * ex.goalReps;
+  let actual = 0;
+  if (ex.type === 'reps') actual = log.totalReps || 0;
+  else if (ex.type === 'hold') actual = log.totalSecs || 0;
+  else actual = log.totalSets > 0 ? goalTotal : 0;
+  const extraSets = Math.max(0, (log.totalSets || 0) - ex.goalSets);
+  if (actual === 0) return { status: 'none', label: '' };
+  if (actual >= goalTotal) {
+    if (extraSets >= 3) return { status: 'over', label: '🏆' };
+    if (extraSets >= 1) return { status: 'over', label: '⭐' };
+    return { status: 'done', label: '✓' };
+  }
+  if ((log.totalSets || 0) >= 2) return { status: 'started2', label: '' };
+  return { status: 'started1', label: '' };
+}
+
+// ═══════════════════════════════
+// CIRCLE PROGRESS UPDATE
+// ═══════════════════════════════
+function updateCircle(id, log) {
+  const ex = EX[id]; if (!ex) return;
+  const cp = document.getElementById('cp-' + id);
+  const ci = document.getElementById('ci-' + id);
+  const item = document.querySelector(`[data-id="${id}"]`);
+  const achEl = document.getElementById('ach-' + id);
+  if (!cp || !ci || !item) return;
+  const circumference = 69.1;
+  const ach = getAchievement(id, log);
+  item.classList.remove('started', 'done', 'over');
+
+  if (!log || (log.totalSets || 0) === 0) {
+    cp.style.strokeDashoffset = circumference;
+    cp.style.stroke = '#2e2e2e';
+    ci.textContent = '○'; ci.style.color = 'var(--dim)';
+    if (achEl) achEl.textContent = '';
+    return;
+  }
+
+  const goalTotal = ex.goalSets * ex.goalReps;
+  let actual = ex.type === 'reps' ? (log.totalReps || 0) : ex.type === 'hold' ? (log.totalSecs || 0) : goalTotal;
+  const pct = Math.min(1, actual / Math.max(1, goalTotal));
+  const offset = circumference * (1 - pct);
+  cp.style.strokeDashoffset = offset;
+
+  if (ach.status === 'done' || ach.status === 'over') {
+    cp.style.stroke = '#c8f060';
+    ci.textContent = '●'; ci.style.color = 'var(--accent)';
+    item.classList.add(ach.status === 'over' ? 'over' : 'done');
+  } else {
+    cp.style.stroke = '#f0a060';
+    ci.textContent = '◑'; ci.style.color = 'var(--orange)';
+    item.classList.add('started');
+  }
+  if (achEl) achEl.textContent = ach.label;
+}
+
+// ═══════════════════════════════
+// REFRESH ITEM DISPLAY
+// ═══════════════════════════════
+function refreshItem(id) {
+  const log = todayLog[id];
+  const btn = document.getElementById('btn-' + id);
+  const acc = document.getElementById('acc-' + id);
+  updateCircle(id, log);
+  if (!log) return;
+  if (log.type === 'run') {
+    const p = [];
+    if (log.totalMin) p.push(log.totalMin + '分钟');
+    if (log.totalKm) p.push(log.totalKm + 'km');
+    if (btn) btn.textContent = p.join(' ') || '已记录';
+    if (acc) acc.textContent = '累计: ' + (p.join(' ') || '-');
+  } else if (log.type === 'hold') {
+    if (btn) btn.textContent = log.totalSets + '组×' + Math.round(log.totalSecs / Math.max(1, log.totalSets)) + 's';
+    if (acc) acc.textContent = '累计: ' + log.totalSets + '组 / ' + log.totalSecs + '秒';
+  } else {
+    if (btn) btn.textContent = log.totalSets + '组×' + Math.round(log.totalReps / Math.max(1, log.totalSets)) + '个';
+    if (acc) acc.textContent = '累计: ' + log.totalSets + '组 / ' + log.totalReps + '个';
+  }
+}
+
+// ═══════════════════════════════
+// SECTION PROGRESS
+// ═══════════════════════════════
+function updateAllProg() {
+  const profile = loadProfile();
+  const weightKg = parseFloat(document.getElementById('input-weight')?.value) || 75;
+  const burnKcal = calcBurnKcal(todayLog, weightKg);
+
+  ['cardio', 'legs', 'upper', 'core'].forEach(s => {
+    let tot = 0;
+    Object.values(todayLog).forEach(e => { if (e.section === s) tot += e.totalSets || 0; });
+    const el = document.getElementById('prog-' + s);
+    if (!el) return;
+    el.textContent = tot + '组';
+    el.className = 'sprog' + (tot === 0 ? '' : tot < 3 ? ' p1' : tot < 5 ? ' p2' : tot >= 6 ? ' over' : ' done');
+  });
+
+  // top bar
+  const wGoal = profile.waterGoal || 2000;
+  document.getElementById('ts-cal-val').textContent = burnKcal + ' kcal';
+  document.getElementById('ts-water-val').textContent = waterMl + '/' + wGoal + 'ml';
+  document.getElementById('ts-weight-val').textContent = (document.getElementById('input-weight')?.value || '--') + 'kg';
+  document.getElementById('ts-sleep-val').textContent = (document.getElementById('input-sleep')?.value || '--') + 'h';
+
+  const kcalIn = calcMealTotals().kcal || 0;
+  const bmr = calcBMR(weightKg, profile.height || 184);
+  const tdee = bmr + 350 + burnKcal;
+  if (kcalIn > 0) {
+    const diff = kcalIn - tdee;
+    const fmt = formatKcalDiff(diff);
+    const diffEl = document.getElementById('ts-diff-val');
+    diffEl.textContent = fmt.text;
+    diffEl.style.color = fmt.color;
+    document.getElementById('ts-kcal-diff').className = 'top-stat';
+    const lbl = document.getElementById('ts-diff-lbl');
+    if (lbl) lbl.textContent = diff < -100 ? '热量缺口' : diff > 100 ? '热量过剩' : '热量平衡';
+  } else {
+    const diffEl = document.getElementById('ts-diff-val');
+    diffEl.textContent = '--';
+    diffEl.style.color = 'var(--muted)';
+  }
+}
+
+// ═══════════════════════════════
+// STREAK
+// ═══════════════════════════════
+function calcStreak(data) {
+  let streak = 0, best = 0, cur = 0;
+  const d = new Date();
+  for (let i = 0; i < 365; i++) {
+    const k = d.toISOString().slice(0, 10);
+    if (data[k] && Object.keys(data[k].exercises || {}).length > 0) { streak++; d.setDate(d.getDate() - 1); }
+    else if (i === 0) { d.setDate(d.getDate() - 1); }
     else break;
   }
-  // best streak
-  const days=Object.keys(data).filter(k=>Object.keys(data[k].exercises||{}).length>0).sort();
-  for(let i=0;i<days.length;i++){
-    if(i===0){cur=1;}
-    else{
-      const prev=new Date(days[i-1]+'T00:00:00');
-      const curr=new Date(days[i]+'T00:00:00');
-      cur=((curr-prev)/86400000===1)?cur+1:1;
+  const days = Object.keys(data).filter(k => Object.keys(data[k].exercises || {}).length > 0).sort();
+  for (let i = 0; i < days.length; i++) {
+    if (i === 0) { cur = 1; }
+    else {
+      const prev = new Date(days[i - 1] + 'T00:00:00');
+      const curr = new Date(days[i] + 'T00:00:00');
+      cur = ((curr - prev) / 86400000 === 1) ? cur + 1 : 1;
     }
-    if(cur>best)best=cur;
+    if (cur > best) best = cur;
   }
-  return{streak,best};
+  return { streak, best };
 }
 
-function updateStreak(){
-  const data=load();
-  const{streak,best}=calcStreak(data);
-  document.getElementById('streak-num').textContent=streak;
+function updateStreak() {
+  const { streak } = calcStreak(load());
+  document.getElementById('streak-num').textContent = streak;
 }
 
-function toggleSec(hdr){hdr.closest('.section-card').classList.toggle('open');}
+// ═══════════════════════════════
+// INIT TODAY
+// ═══════════════════════════════
+function initToday() {
+  const data = load(), t = today();
+  const profile = loadProfile();
+  if (data[t]) {
+    todayLog = data[t].exercises || {};
+    waterMl = data[t].water || 0;
+    stretchDone = data[t].stretch || false;
+    energyLevel = data[t].energy || 0;
+    document.getElementById('day-note').value = data[t].note || '';
+    document.getElementById('input-weight').value = data[t].weight || '';
+    document.getElementById('input-sleep').value = data[t].sleep || '';
+    document.getElementById('input-kcal').value = data[t].kcalIn || '';
+    todayMeals = data[t].meals || [];
+    renderMealList();
+    if (stretchDone) document.getElementById('stretch-toggle').classList.add('on');
+    if (energyLevel) document.querySelectorAll('.energy-btn')[energyLevel - 1].classList.add('selected');
+    Object.keys(todayLog).forEach(refreshItem);
+  }
+  if (profile.height) document.getElementById('set-height').value = profile.height;
+  if (profile.waterGoal) document.getElementById('set-water-goal').value = profile.waterGoal;
+  updateWaterDisplay();
+  updateAllProg();
+  updateStreak();
+}
 
-function openModal(item){
-  curId=item.dataset.id;
-  const ex=EX[curId];curSets=2;
-  document.getElementById('modal-title').textContent=ex.name;
-  document.getElementById('modal-target').textContent='目标 '+ex.target;
-  document.getElementById('modal-note').value='';
-  const log=todayLog[curId];
-  const accEl=document.getElementById('modal-acc');
-  if(log){
-    if(log.type==='hold')accEl.textContent='今日已累计 '+log.totalSets+'组 / '+log.totalSecs+'秒';
-    else if(log.type==='run')accEl.textContent='今日已累计 '+(log.totalMin||0)+'分钟 '+(log.totalKm||0)+'km';
-    else accEl.textContent='今日已累计 '+log.totalSets+'组 / '+log.totalReps+'个';
-  }else accEl.textContent='';
-  document.getElementById('sec-reps').style.display=ex.type==='reps'?'':'none';
-  document.getElementById('sec-hold').style.display=ex.type==='hold'?'':'none';
-  document.getElementById('sec-run').style.display=ex.type==='run'?'':'none';
-  if(ex.type==='reps'){document.getElementById('reps-num').value=ex.def;document.querySelectorAll('#sets-reps .set-btn').forEach((b,i)=>b.classList.toggle('selected',i===1));}
-  else if(ex.type==='hold'){document.getElementById('hold-num').value=ex.def;document.querySelectorAll('#sets-hold .set-btn').forEach((b,i)=>b.classList.toggle('selected',i===1));}
-  else{document.getElementById('run-min').value='';document.getElementById('run-km').value='';}
+// ═══════════════════════════════
+// WATER
+// ═══════════════════════════════
+function updateWaterDisplay() {
+  const profile = loadProfile();
+  const goal = profile.waterGoal || 2000;
+  const pct = Math.min(100, (waterMl / goal) * 100);
+  document.getElementById('water-display').textContent = waterMl + ' / ' + goal + ' ml';
+  document.getElementById('water-fill').style.width = pct + '%';
+  document.getElementById('ts-water-val').textContent = waterMl + '/' + goal + 'ml';
+  const ts = document.getElementById('ts-water');
+  ts.className = 'top-stat ' + (pct >= 100 ? 'good' : pct >= 50 ? '' : 'warn');
+}
+
+function addWater(ml) {
+  waterMl = Math.max(0, waterMl + ml);
+  updateWaterDisplay();
+  autoSave();
+}
+
+// ═══════════════════════════════
+// UI INTERACTIONS
+// ═══════════════════════════════
+function toggleSec(hdr) { hdr.closest('.section-card').classList.toggle('open'); }
+
+function openModal(item) {
+  curId = item.dataset.id;
+  const ex = EX[curId]; curSets = 2;
+  document.getElementById('modal-title').textContent = ex.name;
+  document.getElementById('modal-target').textContent = '目标 ' + ex.goalSets + '组×' + ex.goalReps + (ex.type === 'hold' ? '秒' : '个');
+  document.getElementById('modal-note').value = '';
+  const log = todayLog[curId];
+  const accEl = document.getElementById('modal-acc');
+  if (log) {
+    if (log.type === 'hold') accEl.textContent = '今日已累计 ' + log.totalSets + '组 / ' + log.totalSecs + '秒';
+    else if (log.type === 'run') accEl.textContent = '今日已累计 ' + (log.totalMin || 0) + '分钟 ' + (log.totalKm || 0) + 'km';
+    else accEl.textContent = '今日已累计 ' + log.totalSets + '组 / ' + log.totalReps + '个';
+  } else accEl.textContent = '';
+  document.getElementById('sec-reps').style.display = ex.type === 'reps' ? '' : 'none';
+  document.getElementById('sec-hold').style.display = ex.type === 'hold' ? '' : 'none';
+  document.getElementById('sec-run').style.display = ex.type === 'run' ? '' : 'none';
+  if (ex.type === 'reps') { document.getElementById('reps-num').value = ex.def; document.querySelectorAll('#sets-reps .set-btn').forEach((b, i) => b.classList.toggle('selected', i === 1)); }
+  else if (ex.type === 'hold') { document.getElementById('hold-num').value = ex.def; document.querySelectorAll('#sets-hold .set-btn').forEach((b, i) => b.classList.toggle('selected', i === 1)); }
+  else { document.getElementById('run-min').value = ''; document.getElementById('run-km').value = ''; }
   document.getElementById('modal-overlay').classList.add('open');
 }
 
-function closeOut(e){if(e.target===document.getElementById('modal-overlay'))closeModal();}
-function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
-function setSets(n,btn,rowId){curSets=n;document.querySelectorAll('#'+rowId+' .set-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');}
-function adj(id,d,m){const el=document.getElementById(id);el.value=Math.max(m,(parseInt(el.value)||0)+d);}
+function closeOut(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+function setSets(n, btn, rowId) { curSets = n; document.querySelectorAll('#' + rowId + ' .set-btn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); }
+function adj(id, d, m) { const el = document.getElementById(id); el.value = Math.max(m, (parseInt(el.value) || 0) + d); }
 
-function confirmLog(){
-  if(!curId)return;
-  const ex=EX[curId];
-  const existing=todayLog[curId]||{section:ex.section,type:ex.type,totalSets:0,totalReps:0,totalSecs:0,totalMin:0,totalKm:0};
-  if(ex.type==='reps'){const r=parseInt(document.getElementById('reps-num').value)||ex.def;existing.totalSets+=curSets;existing.totalReps+=curSets*r;}
-  else if(ex.type==='hold'){const s=parseInt(document.getElementById('hold-num').value)||ex.def;existing.totalSets+=curSets;existing.totalSecs+=curSets*s;}
-  else{const m=parseFloat(document.getElementById('run-min').value)||0;const k=parseFloat(document.getElementById('run-km').value)||0;existing.totalSets+=1;existing.totalMin=parseFloat(((existing.totalMin||0)+m).toFixed(1));existing.totalKm=parseFloat(((existing.totalKm||0)+k).toFixed(2));}
-  existing.lastNote=document.getElementById('modal-note').value;
-  todayLog[curId]=existing;
-  refreshItem(curId);updateAllProg();autoSave();closeModal();
+function confirmLog() {
+  if (!curId) return;
+  const ex = EX[curId];
+  const existing = todayLog[curId] || { section: ex.section, type: ex.type, totalSets: 0, totalReps: 0, totalSecs: 0, totalMin: 0, totalKm: 0 };
+  if (ex.type === 'reps') {
+    const r = parseInt(document.getElementById('reps-num').value) || ex.def;
+    existing.totalSets += curSets; existing.totalReps += curSets * r;
+  } else if (ex.type === 'hold') {
+    const s = parseInt(document.getElementById('hold-num').value) || ex.def;
+    existing.totalSets += curSets; existing.totalSecs += curSets * s;
+  } else {
+    const m = parseFloat(document.getElementById('run-min').value) || 0;
+    const k = parseFloat(document.getElementById('run-km').value) || 0;
+    existing.totalSets += 1;
+    existing.totalMin = parseFloat(((existing.totalMin || 0) + m).toFixed(1));
+    existing.totalKm = parseFloat(((existing.totalKm || 0) + k).toFixed(2));
+  }
+  existing.lastNote = document.getElementById('modal-note').value;
+  todayLog[curId] = existing;
+  refreshItem(curId);
+  updateAllProg();
+  autoSave();
+  closeModal();
 }
 
-function toggleStretch(){stretchDone=!stretchDone;document.getElementById('stretch-toggle').classList.toggle('on',stretchDone);autoSave();}
-function setEnergy(n,btn){energyLevel=n;document.querySelectorAll('.energy-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');autoSave();}
-function autoSave(){const data=load(),t=today();data[t]=data[t]||{};data[t].exercises=todayLog;data[t].stretch=stretchDone;data[t].energy=energyLevel;data[t].note=document.getElementById('day-note').value;save(data);updateStreak();}
-function saveDay(){autoSave();alert('已保存！');}
+function toggleStretch() { stretchDone = !stretchDone; document.getElementById('stretch-toggle').classList.toggle('on', stretchDone); autoSave(); }
+function setEnergy(n, btn) { energyLevel = n; document.querySelectorAll('.energy-btn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); autoSave(); }
 
-function switchTab(tab,btn){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+function autoSave() {
+  const data = load(), t = today();
+  data[t] = data[t] || {};
+  data[t].exercises = todayLog;
+  data[t].water = waterMl;
+  data[t].stretch = stretchDone;
+  data[t].energy = energyLevel;
+  data[t].note = document.getElementById('day-note').value;
+  data[t].weight = parseFloat(document.getElementById('input-weight').value) || null;
+  data[t].sleep = parseFloat(document.getElementById('input-sleep').value) || null;
+  data[t].meals = todayMeals;
+  const totals = calcMealTotals();
+  data[t].kcalIn = totals.kcal || null;
+  data[t].protein = totals.protein || null;
+  save(data);
+  updateStreak();
+  updateAllProg();
+}
+
+function saveDay() { autoSave(); alert('已保存！'); }
+
+function saveProfile() {
+  const h = parseFloat(document.getElementById('set-height').value) || 184;
+  const wg = parseFloat(document.getElementById('set-water-goal').value) || 2000;
+  saveProfileStore({ height: h, waterGoal: wg });
+  updateWaterDisplay();
+}
+
+// ═══════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('page-'+tab).classList.add('active');
-  if(tab==='summary')renderSummary();
-  if(tab==='history')renderHistory();
-  if(tab==='settings')renderSettings();
+  document.getElementById('page-' + tab).classList.add('active');
+  if (tab === 'summary') renderSummary();
+  if (tab === 'history') renderHistory();
+  if (tab === 'settings') renderSettings();
 }
 
-function renderSummary(){
-  const data=load();
-  const days=Object.keys(data).filter(k=>Object.keys(data[k].exercises||{}).length>0);
-  document.getElementById('s-days').textContent=days.length;
-  const{streak,best}=calcStreak(data);
-  document.getElementById('s-streak').textContent=streak;
-  document.getElementById('s-best').textContent=best;
+// ═══════════════════════════════
+// SUMMARY
+// ═══════════════════════════════
+function renderSummary() {
+  const data = load();
+  const profile = loadProfile();
+  const days = Object.keys(data).filter(k => Object.keys(data[k].exercises || {}).length > 0);
+  document.getElementById('s-days').textContent = days.length;
+  const { streak, best } = calcStreak(data);
+  document.getElementById('s-streak').textContent = streak;
+  document.getElementById('s-best').textContent = best;
 
-  let totalSets=0,totalStretch=0;
-  const secSets={cardio:0,legs:0,upper:0,core:0};
-  const exCount={};
-  days.forEach(d=>{
-    const ex=data[d].exercises||{};
-    if(data[d].stretch)totalStretch++;
-    Object.entries(ex).forEach(([id,e])=>{
-      const s=e.totalSets||0;
-      totalSets+=s;
-      secSets[e.section]=(secSets[e.section]||0)+s;
-      exCount[id]=(exCount[id]||0)+s;
+  let totalSets = 0, totalStretch = 0;
+  const secSets = { cardio: 0, legs: 0, upper: 0, core: 0 };
+  const exCount = {};
+  days.forEach(d => {
+    const ex = data[d].exercises || {};
+    if (data[d].stretch) totalStretch++;
+    Object.entries(ex).forEach(([id, e]) => {
+      const s = e.totalSets || 0; totalSets += s;
+      secSets[e.section] = (secSets[e.section] || 0) + s;
+      exCount[id] = (exCount[id] || 0) + s;
     });
   });
-  document.getElementById('s-sets').textContent=totalSets;
-  document.getElementById('s-stretch').textContent=totalStretch;
+  document.getElementById('s-sets').textContent = totalSets;
+  document.getElementById('s-stretch').textContent = totalStretch;
+  const mon = new Date(); mon.setDate(mon.getDate() - mon.getDay() + 1);
+  let thisWeek = 0;
+  for (let i = 0; i < 7; i++) { const d = new Date(mon); d.setDate(mon.getDate() + i); if (data[d.toISOString().slice(0, 10)] && Object.keys(data[d.toISOString().slice(0, 10)].exercises || {}).length > 0) thisWeek++; }
+  document.getElementById('s-thisweek').textContent = thisWeek;
+  document.getElementById('sc-cardio').textContent = secSets.cardio || 0;
+  document.getElementById('sc-legs').textContent = secSets.legs || 0;
+  document.getElementById('sc-upper').textContent = secSets.upper || 0;
+  document.getElementById('sc-core').textContent = secSets.core || 0;
 
-  // this week active
-  const mon=new Date();mon.setDate(mon.getDate()-mon.getDay()+1);
-  let thisWeek=0;
-  for(let i=0;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);const k=d.toISOString().slice(0,10);if(data[k]&&Object.keys(data[k].exercises||{}).length>0)thisWeek++;}
-  document.getElementById('s-thisweek').textContent=thisWeek;
+  // weight trend
+  renderLineSVG('weight-svg', 'weight-hint', 14, d => data[d]?.weight, 'kg', '#60a8f0');
 
-  // section counts
-  document.getElementById('sc-cardio').textContent=secSets.cardio||0;
-  document.getElementById('sc-legs').textContent=secSets.legs||0;
-  document.getElementById('sc-upper').textContent=secSets.upper||0;
-  document.getElementById('sc-core').textContent=secSets.core||0;
+  // health stats 7 days
+  const healthEl = document.getElementById('health-stats');
+  const h7 = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); h7.push(d.toISOString().slice(0, 10)); }
+  let avgSleep = 0, sleepDays = 0, avgKcal = 0, kcalDays = 0, avgProtein = 0, proteinDays = 0, avgWater = 0;
+  h7.forEach(d => {
+    const log = data[d]; if (!log) return;
+    if (log.sleep) { avgSleep += log.sleep; sleepDays++; }
+    const dayKcal = log.kcalIn || (log.meals || []).reduce((a,m) => a+(m.kcal||0), 0);
+    const dayProtein = log.protein || (log.meals || []).reduce((a,m) => a+(m.protein||0), 0);
+    if (dayKcal) { avgKcal += dayKcal; kcalDays++; }
+    if (dayProtein) { avgProtein += dayProtein; proteinDays++; }
+    avgWater += log.water || 0;
+  });
+  if (sleepDays) avgSleep = (avgSleep / sleepDays).toFixed(1);
+  if (kcalDays) avgKcal = Math.round(avgKcal / kcalDays);
+  if (proteinDays) avgProtein = Math.round(avgProtein / proteinDays);
+  avgWater = Math.round(avgWater / 7);
+  healthEl.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="stat-box"><div class="sv" style="font-size:20px">${sleepDays ? avgSleep + 'h' : '--'}</div><div class="sl">平均睡眠</div></div>
+      <div class="stat-box"><div class="sv" style="font-size:20px">${avgWater}ml</div><div class="sl">平均饮水</div></div>
+      <div class="stat-box"><div class="sv" style="font-size:20px">${kcalDays ? avgKcal : '--'}</div><div class="sl">平均热量摄入</div></div>
+      <div class="stat-box"><div class="sv" style="font-size:20px">${proteinDays ? avgProtein + 'g' : '--'}</div><div class="sl">平均蛋白质</div></div>
+    </div>`;
 
-  // heatmap 28 days
-  const hm=document.getElementById('heatmap');hm.innerHTML='';
-  const hmDays=[];for(let i=27;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);hmDays.push(d.toISOString().slice(0,10));}
-  const maxHm=Math.max(1,...hmDays.map(d=>Object.keys((data[d]||{}).exercises||{}).length));
-  hmDays.forEach(d=>{
-    const c=Object.keys((data[d]||{}).exercises||{}).length;
-    const isT=d===today();
-    let lv='';if(c>0){const r=c/maxHm;lv=r>.75?'l4':r>.5?'l3':r>.25?'l2':'l1';}
-    hm.innerHTML+=`<div class="hm-cell ${lv} ${isT?'today':''}" title="${d}: ${c}个动作"></div>`;
+  // nutrition analysis
+  const latestWeight = (() => { const d = Object.keys(data).sort().reverse().find(k => data[k].weight); return d ? data[d].weight : 75; })();
+  const bmr = calcBMR(latestWeight, profile.height || 184);
+  const tdee = bmr + 350;
+  const proteinGoal = Math.round(latestWeight * 1.8);
+  const proteinGap = proteinDays ? Math.max(0, proteinGoal - avgProtein) : null;
+  const kcalGap = kcalDays ? avgKcal - tdee : null;
+  document.getElementById('nutrition-analysis').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div class="stat-box"><div class="sv" style="font-size:18px">${bmr}</div><div class="sl">基础代谢 BMR</div></div>
+      <div class="stat-box"><div class="sv" style="font-size:18px">${tdee}</div><div class="sl">每日总消耗 TDEE</div></div>
+      <div class="stat-box"><div class="sv" style="font-size:18px;color:var(--blue)">${proteinGoal}g</div><div class="sl">蛋白质需求/天</div></div>
+      <div class="stat-box"><div class="sv" style="font-size:18px;color:${proteinGap > 0 ? 'var(--orange)' : 'var(--accent)'}">${proteinGap !== null ? (proteinGap > 0 ? '-' + proteinGap + 'g' : '达标✓') : '--'}</div><div class="sl">蛋白质缺口</div></div>
+    </div>
+    <div style="background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--muted);line-height:1.8">
+      ${kcalDays ? (() => { const fmt = formatKcalDiff(kcalGap); return `近7天平均热量摄入 <span style="color:var(--text)">${avgKcal} kcal</span>，热量差 <span style="color:${fmt.color};font-weight:500;font-family:var(--mono)">${fmt.text}</span>`; })() : '请在今日打卡页面记录饮食数据以查看分析'}
+    </div>`;
+
+  // heatmap
+  const hm = document.getElementById('heatmap'); hm.innerHTML = '';
+  const hmDays = []; for (let i = 27; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); hmDays.push(d.toISOString().slice(0, 10)); }
+  const maxHm = Math.max(1, ...hmDays.map(d => Object.keys((data[d] || {}).exercises || {}).length));
+  hmDays.forEach(d => {
+    const c = Object.keys((data[d] || {}).exercises || {}).length;
+    const isT = d === today();
+    let lv = ''; if (c > 0) { const r = c / maxHm; lv = r > .75 ? 'l4' : r > .5 ? 'l3' : r > .25 ? 'l2' : 'l1'; }
+    const cell = document.createElement('div');
+    cell.className = 'hm-cell ' + lv + (isT ? ' today' : '');
+    cell.title = d + ': ' + c + '个动作';
+    cell.onclick = () => openDetail(d);
+    hm.appendChild(cell);
   });
 
   // week compare
-  const thisW=[],lastW=[];
-  const now=new Date();
-  const dow=now.getDay()===0?6:now.getDay()-1;
-  for(let i=0;i<7;i++){
-    const dt=new Date(now);dt.setDate(now.getDate()-dow+i);
-    const k=dt.toISOString().slice(0,10);
-    thisW.push(Object.values((data[k]||{}).exercises||{}).reduce((a,e)=>a+(e.totalSets||0),0));
-    const lk=new Date(dt);lk.setDate(dt.getDate()-7);
-    lastW.push(Object.values((data[lk.toISOString().slice(0,10)]||{}).exercises||{}).reduce((a,e)=>a+(e.totalSets||0),0));
+  const now = new Date(), dow = now.getDay() === 0 ? 6 : now.getDay() - 1;
+  let twTotal = 0, lwTotal = 0;
+  for (let i = 0; i < 7; i++) {
+    const dt = new Date(now); dt.setDate(now.getDate() - dow + i);
+    twTotal += Object.values((data[dt.toISOString().slice(0, 10)] || {}).exercises || {}).reduce((a, e) => a + (e.totalSets || 0), 0);
+    const lk = new Date(dt); lk.setDate(dt.getDate() - 7);
+    lwTotal += Object.values((data[lk.toISOString().slice(0, 10)] || {}).exercises || {}).reduce((a, e) => a + (e.totalSets || 0), 0);
   }
-  const twTotal=thisW.reduce((a,b)=>a+b,0);
-  const lwTotal=lastW.reduce((a,b)=>a+b,0);
-  const maxCmp=Math.max(1,twTotal,lwTotal);
-  const diff=twTotal-lwTotal;
-  const diffStr=diff>0?`↑ 多${diff}组`:diff<0?`↓ 少${Math.abs(diff)}组`:'持平';
-  const diffColor=diff>0?'var(--accent)':diff<0?'var(--red)':'var(--muted)';
-  document.getElementById('compare-content').innerHTML=`
-    <div class="compare-row"><span class="compare-lbl">本周</span><div class="compare-track"><div class="compare-fill" style="width:${Math.round(twTotal/maxCmp*100)}%;background:var(--accent)"></div></div><span class="compare-val">${twTotal}组</span></div>
-    <div class="compare-row"><span class="compare-lbl">上周</span><div class="compare-track"><div class="compare-fill" style="width:${Math.round(lwTotal/maxCmp*100)}%;background:var(--muted)"></div></div><span class="compare-val">${lwTotal}组</span></div>
-    <div style="text-align:center;font-size:13px;color:${diffColor};margin-top:4px">${diffStr}</div>`;
+  const maxCmp = Math.max(1, twTotal, lwTotal);
+  const diff = twTotal - lwTotal;
+  document.getElementById('compare-content').innerHTML = `
+    <div class="compare-row"><span class="compare-lbl">本周</span><div class="compare-track"><div class="compare-fill" style="width:${Math.round(twTotal / maxCmp * 100)}%;background:var(--accent)"></div></div><span class="compare-val">${twTotal}组</span></div>
+    <div class="compare-row"><span class="compare-lbl">上周</span><div class="compare-track"><div class="compare-fill" style="width:${Math.round(lwTotal / maxCmp * 100)}%;background:var(--muted)"></div></div><span class="compare-val">${lwTotal}组</span></div>
+    <div style="text-align:center;font-size:13px;color:${diff > 0 ? 'var(--accent)' : diff < 0 ? 'var(--red)' : 'var(--muted)'};margin-top:4px">${diff > 0 ? '↑ 多' + diff + '组' : diff < 0 ? '↓ 少' + Math.abs(diff) + '组' : '与上周持平'}</div>`;
 
   // ex ranking
-  const cont=document.getElementById('ex-stats');
-  const sorted=Object.entries(exCount).sort((a,b)=>b[1]-a[1]);
-  if(!sorted.length){cont.innerHTML='<div class="empty-state">暂无数据</div>';return;}
-  const maxV=sorted[0][1];
-  cont.innerHTML=sorted.map(([id,c])=>`<div class="bar-row">
-    <div class="bar-row-top"><span class="bar-row-name">${EX[id]?EX[id].name:id}</span><span class="bar-row-count">${c}组</span></div>
-    <div class="bar-track"><div class="bar-fill" style="width:${Math.round(c/maxV*100)}%"></div></div>
-  </div>`).join('');
+  const cont = document.getElementById('ex-stats');
+  const sorted = Object.entries(exCount).sort((a, b) => b[1] - a[1]);
+  if (!sorted.length) { cont.innerHTML = '<div class="empty-state">暂无数据</div>'; }
+  else {
+    const maxV = sorted[0][1];
+    cont.innerHTML = sorted.map(([id, c]) => `<div class="bar-row"><div class="bar-row-top"><span class="bar-row-name">${EX[id] ? EX[id].name : id}</span><span class="bar-row-count">${c}组</span></div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(c / maxV * 100)}%"></div></div></div>`).join('');
+  }
 
   // trend select
-  const sel=document.getElementById('trend-select');
-  const prevVal=sel.value;
-  sel.innerHTML='<option value="">— 选择动作 —</option>'+sorted.map(([id])=>`<option value="${id}">${EX[id]?EX[id].name:id}</option>`).join('');
-  if(prevVal)sel.value=prevVal;
+  const sel = document.getElementById('trend-select');
+  const prevVal = sel.value;
+  sel.innerHTML = '<option value="">— 选择动作 —</option>' + sorted.map(([id]) => `<option value="${id}">${EX[id] ? EX[id].name : id}</option>`).join('');
+  if (prevVal) sel.value = prevVal;
   renderTrend();
 
-  // state dots 14 days
-  const sdots=document.getElementById('state-dots');
-  const slabels=document.getElementById('state-labels');
-  sdots.innerHTML='';slabels.innerHTML='';
-  const sd14=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);sd14.push(d.toISOString().slice(0,10));}
-  sd14.forEach(d=>{
-    const e=data[d]&&data[d].energy||0;
-    const cls=e?'e'+e:'';
-    const h=e?[0,12,24,36,48][e]:8;
-    sdots.innerHTML+=`<div class="state-dot-wrap"><div class="state-dot ${cls}" style="height:${h}px;width:${h}px;margin-bottom:${(48-h)/2}px"></div></div>`;
-    slabels.innerHTML+=`<div style="flex:1;text-align:center">${dateStr(d)}</div>`;
-  });
+  // state dots
+  renderStateDots();
 }
 
-function renderTrend(){
-  const sel=document.getElementById('trend-select');
-  const id=sel.value;
-  const svg=document.getElementById('trend-svg');
-  const hint=document.getElementById('trend-hint');
-  if(!id){svg.innerHTML='';hint.textContent='选择动作查看趋势';return;}
-  const data=load();
-  const ex=EX[id];
-  // last 14 days
-  const pts=[];
-  for(let i=13;i>=0;i--){
-    const d=new Date();d.setDate(d.getDate()-i);
-    const k=d.toISOString().slice(0,10);
-    const log=(data[k]||{}).exercises||{};
-    const entry=log[id];
-    let val=0;
-    if(entry){
-      if(entry.type==='hold')val=entry.totalSecs||0;
-      else if(entry.type==='run')val=entry.totalMin||0;
-      else val=entry.totalReps||0;
-    }
-    pts.push({d:k,v:val});
+function renderLineSVG(svgId, hintId, days, getter, unit, color) {
+  const data = load();
+  const pts = [];
+  for (let i = days - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const k = d.toISOString().slice(0, 10); pts.push({ d: k, v: getter(k) || null }); }
+  const svg = document.getElementById(svgId);
+  const hint = document.getElementById(hintId);
+  const valid = pts.filter(p => p.v !== null);
+  if (valid.length < 2) { svg.innerHTML = ''; if (hint) hint.textContent = '至少需要2天数据才能显示趋势'; return; }
+  const W = 300, H = 70, pad = 8;
+  const vals = valid.map(p => p.v);
+  const minV = Math.min(...vals), maxV = Math.max(...vals);
+  const range = maxV - minV || 1;
+  const xs = pts.map((_, i) => pad + i * (W - pad * 2) / (days - 1));
+  const pathPts = pts.map((p, i) => p.v !== null ? { x: xs[i], y: H - pad - ((p.v - minV) / range) * (H - pad * 2) } : null);
+  let pathD = '', first = true;
+  pathPts.forEach(pt => { if (pt) { pathD += (first ? 'M' : 'L') + pt.x + ',' + pt.y; first = false; } else { first = true; } });
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  svg.innerHTML = `<path d="${pathD}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>${pathPts.map(pt => pt ? `<circle cx="${pt.x}" cy="${pt.y}" r="3" fill="${color}"/>` : '').join('')}`;
+  if (hint) hint.textContent = `最低 ${minV}${unit} · 最高 ${maxV}${unit} · 最新 ${valid[valid.length - 1].v}${unit}`;
+}
+
+function renderTrend() {
+  const sel = document.getElementById('trend-select');
+  const id = sel.value;
+  const svg = document.getElementById('trend-svg');
+  const hint = document.getElementById('trend-hint');
+  if (!id) { svg.innerHTML = ''; hint.textContent = '选择动作查看趋势'; return; }
+  const data = load(); const ex = EX[id];
+  const pts = [];
+  for (let i = 13; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const k = d.toISOString().slice(0, 10); const log = (data[k] || {}).exercises || {}; const entry = log[id]; let val = 0; if (entry) { if (entry.type === 'hold') val = entry.totalSecs || 0; else if (entry.type === 'run') val = entry.totalMin || 0; else val = entry.totalReps || 0; } pts.push({ d: k, v: val }); }
+  const maxV = Math.max(1, ...pts.map(p => p.v));
+  const W = 300, H = 70, pad = 4;
+  const xs = pts.map((_, i) => pad + i * (W - pad * 2) / 13);
+  const ys = pts.map(p => H - pad - (p.v / maxV) * (H - pad * 2));
+  const pathD = 'M' + xs.map((x, i) => `${x},${ys[i]}`).join('L');
+  const filled = 'M' + xs[0] + ',' + H + ' L' + xs.map((x, i) => `${x},${ys[i]}`).join('L') + ' L' + xs[xs.length - 1] + ',' + H + 'Z';
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  svg.innerHTML = `<path d="${filled}" fill="rgba(200,240,96,0.1)"/><path d="${pathD}" fill="none" stroke="#c8f060" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>${pts.map((p, i) => p.v > 0 ? `<circle cx="${xs[i]}" cy="${ys[i]}" r="3" fill="#c8f060"/>` : '').join('')}`;
+  const unit = ex.type === 'hold' ? '秒' : ex.type === 'run' ? '分钟' : '个';
+  const hasDays = pts.filter(p => p.v > 0);
+  hint.textContent = hasDays.length > 0 ? `近14天有记录 ${hasDays.length} 天，最高 ${Math.max(...hasDays.map(p => p.v))}${unit}` : '近14天暂无该动作记录';
+}
+
+function renderStateDots() {
+  const data = load();
+  const sdots = document.getElementById('state-dots');
+  const slabels = document.getElementById('state-labels');
+  if (!sdots) return;
+  sdots.innerHTML = ''; slabels.innerHTML = '';
+  const clrs = ['', '#f06060', '#f0a060', '#60a8f0', '#c8f060'];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const k = d.toISOString().slice(0, 10);
+    const e = data[k]?.energy || 0;
+    const h = e ? [0, 14, 24, 36, 48][e] : 8;
+    sdots.innerHTML += `<div class="state-dot-wrap"><div class="state-dot" style="width:${h}px;height:${h}px;background:${clrs[e] || 'var(--surface2)'}"></div></div>`;
+    slabels.innerHTML += `<div style="flex:1;text-align:center">${(d.getMonth() + 1) + '/' + d.getDate()}</div>`;
   }
-  const maxV=Math.max(1,...pts.map(p=>p.v));
-  const W=300,H=70,pad=4;
-  const xs=pts.map((_,i)=>pad+i*(W-pad*2)/13);
-  const ys=pts.map(p=>H-pad-(p.v/maxV)*(H-pad*2));
-  const pathD='M'+xs.map((x,i)=>`${x},${ys[i]}`).join('L');
-  const filled='M'+xs[0]+','+H+' L'+xs.map((x,i)=>`${x},${ys[i]}`).join('L')+' L'+xs[xs.length-1]+','+H+'Z';
-  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
-  svg.innerHTML=`
-    <path d="${filled}" fill="rgba(200,240,96,0.12)"/>
-    <path d="${pathD}" fill="none" stroke="#c8f060" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    ${pts.map((p,i)=>p.v>0?`<circle cx="${xs[i]}" cy="${ys[i]}" r="3" fill="#c8f060"/>`:'').join('')}`;
-  const unit=ex.type==='hold'?'秒':ex.type==='run'?'分钟':'个';
-  const hasDays=pts.filter(p=>p.v>0);
-  hint.textContent=hasDays.length>0?`最近有记录 ${hasDays.length} 天，最高 ${Math.max(...hasDays.map(p=>p.v))}${unit}`:'近14天暂无该动作记录';
 }
 
-function renderHistory(){
-  const data=load();
-  const days=Object.keys(data).sort((a,b)=>b.localeCompare(a));
-  const cont=document.getElementById('history-list');
-  if(!days.length){cont.innerHTML='<div class="empty-state">还没有记录<br>完成第一次训练吧 💪</div>';return;}
-  const em=['','😴很累','😐一般','💪不错','🔥极佳'];
-  cont.innerHTML=days.map(d=>{
-    const log=data[d],ex=log.exercises||{};
-    if(!Object.keys(ex).length&&!log.stretch&&!log.energy&&!log.note)return'';
-    const tags=Object.entries(ex).map(([id,e])=>{
-      let detail='';
-      if(e.type==='hold')detail=e.totalSets+'组/'+e.totalSecs+'秒';
-      else if(e.type==='run')detail=(e.totalMin||0)+'分'+(e.totalKm?'/'+e.totalKm+'km':'');
-      else detail=e.totalSets+'组/'+e.totalReps+'个';
-      return`<div class="htag ex">${EX[id]?EX[id].name:id} ${detail}</div>`;
+// ═══════════════════════════════
+// HISTORY
+// ═══════════════════════════════
+function renderHistory() {
+  const data = load();
+  const days = Object.keys(data).sort((a, b) => b.localeCompare(a));
+  const cont = document.getElementById('history-list');
+  if (!days.length) { cont.innerHTML = '<div class="empty-state">还没有记录<br>完成第一次训练吧 💪</div>'; return; }
+  const em = ['', '😴很累', '😐一般', '💪不错', '🔥极佳'];
+  cont.innerHTML = days.map(d => {
+    const log = data[d], ex = log.exercises || {};
+    if (!Object.keys(ex).length && !log.stretch && !log.energy && !log.note && !log.weight) return '';
+    const tags = Object.entries(ex).map(([id, e]) => {
+      let detail = '';
+      if (e.type === 'hold') detail = e.totalSets + '组/' + e.totalSecs + '秒';
+      else if (e.type === 'run') detail = (e.totalMin || 0) + '分' + (e.totalKm ? '/' + e.totalKm + 'km' : '');
+      else detail = e.totalSets + '组/' + e.totalReps + '个';
+      const ach = getAchievement(id, e);
+      return `<div class="htag ex">${EX[id] ? EX[id].name : id} ${detail}${ach.label}</div>`;
     }).join('');
-    const stretch=log.stretch?'<div class="htag info">拉伸✓</div>':'';
-    const energy=log.energy?`<div class="htag info">${em[log.energy]}</div>`:'';
-    const note=log.note?`<div class="hnote">${log.note}</div>`:'';
-    return`<div class="history-item"><div class="hdate">${d} · ${Object.keys(ex).length}个动作</div><div class="htags">${tags}${stretch}${energy}</div>${note}</div>`;
+    const extras = [];
+    if (log.stretch) extras.push('<div class="htag info">拉伸✓</div>');
+    if (log.energy) extras.push(`<div class="htag info">${em[log.energy]}</div>`);
+    if (log.weight) extras.push(`<div class="htag info">⚖️${log.weight}kg</div>`);
+    if (log.sleep) extras.push(`<div class="htag info">😴${log.sleep}h</div>`);
+    if (log.water) extras.push(`<div class="htag info">💧${log.water}ml</div>`);
+    const note = log.note ? `<div class="hnote">${log.note}</div>` : '';
+    return `<div class="history-item" onclick="openDetail('${d}')">
+      <div class="history-date-row"><span class="hdate-lbl">${d} · ${Object.keys(ex).length}个动作</span><span class="hdate-arr">›</span></div>
+      <div class="htags">${tags}${extras.join('')}</div>${note}
+    </div>`;
   }).filter(Boolean).join('');
-  if(!cont.innerHTML)cont.innerHTML='<div class="empty-state">还没有记录<br>完成第一次训练吧 💪</div>';
+  if (!cont.innerHTML) cont.innerHTML = '<div class="empty-state">还没有记录<br>完成第一次训练吧 💪</div>';
 }
 
-const now=new Date();
-document.getElementById('header-date').textContent=now.getFullYear()+'年'+(now.getMonth()+1)+'月'+now.getDate()+'日 '+['周日','周一','周二','周三','周四','周五','周六'][now.getDay()];
-function exportJSON(){
-  const data=load();
-  if(!Object.keys(data).length){alert('暂无数据可导出');return;}
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  const dateStr=new Date().toISOString().slice(0,10);
-  a.href=url;a.download='训练记录_'+dateStr+'.json';
-  document.body.appendChild(a);a.click();
-  document.body.removeChild(a);URL.revokeObjectURL(url);
-}
+// ═══════════════════════════════
+// HISTORY DETAIL
+// ═══════════════════════════════
+function openDetail(d) {
+  const data = load();
+  const log = data[d];
+  if (!log) return;
+  const profile = loadProfile();
+  document.getElementById('hdetail-date').textContent = d;
+  const ex = log.exercises || {};
+  const em = ['', '😴 很累', '😐 一般', '💪 不错', '🔥 极佳'];
+  const burn = calcBurnKcal(ex, log.weight || 75);
+  const bmr = calcBMR(log.weight || 75, profile.height || 184);
+  const tdee = bmr + 350 + burn;
+  const kcalDiff = log.kcalIn ? log.kcalIn - tdee : null;
 
-function exportCSV(){
-  const data=load();
-  if(!Object.keys(data).length){alert('暂无数据可导出');return;}
-  const rows=[['日期','动作','系列','类型','组数','次数/秒数','备注','状态','拉伸','日记']];
-  Object.keys(data).sort().forEach(d=>{
-    const log=data[d];
-    const ex=log.exercises||{};
-    const em=['','很累','一般','不错','极佳'];
-    if(Object.keys(ex).length===0){
-      rows.push([d,'','','','','','',em[log.energy||0],log.stretch?'是':'否',log.note||'']);
-    } else {
-      Object.entries(ex).forEach(([id,e],i)=>{
-        let val='';
-        if(e.type==='hold')val=e.totalSecs+'秒';
-        else if(e.type==='run')val=(e.totalMin||0)+'分钟/'+(e.totalKm||0)+'km';
-        else val=e.totalReps+'个';
-        rows.push([
-          d,
-          EX[id]?EX[id].name:id,
-          e.section,
-          e.type==='hold'?'支撑':e.type==='run'?'跑步':'次数',
-          e.totalSets,
-          val,
-          e.lastNote||'',
-          i===0?em[log.energy||0]:'',
-          i===0?(log.stretch?'是':'否'):'',
-          i===0?(log.note||''):'',
-        ]);
-      });
-    }
-  });
-  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
-  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  const dateStr=new Date().toISOString().slice(0,10);
-  a.href=url;a.download='训练记录_'+dateStr+'.csv';
-  document.body.appendChild(a);a.click();
-  document.body.removeChild(a);URL.revokeObjectURL(url);
-}
+  let html = '';
 
-function importJSON(event){
-  const file=event.target.files[0];
-  if(!file)return;
-  const reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      const imported=JSON.parse(e.target.result);
-      if(typeof imported!=='object'||Array.isArray(imported))throw new Error('格式错误');
-      save(imported);
-      todayLog={};stretchDone=false;energyLevel=0;
-      // reload today
-      const t=today();
-      if(imported[t]){
-        todayLog=imported[t].exercises||{};
-        stretchDone=imported[t].stretch||false;
-        energyLevel=imported[t].energy||0;
-        document.getElementById('day-note').value=imported[t].note||'';
-        if(stretchDone)document.getElementById('stretch-toggle').classList.add('on');
-        document.querySelectorAll('.energy-btn').forEach(b=>b.classList.remove('selected'));
-        if(energyLevel)document.querySelectorAll('.energy-btn')[energyLevel-1].classList.add('selected');
-        document.querySelectorAll('.ex-item').forEach(item=>{
-          item.classList.remove('done');
-          const btn=document.getElementById('btn-'+item.dataset.id);
-          if(btn)btn.textContent='+记录';
-          const acc=document.getElementById('acc-'+item.dataset.id);
-          if(acc&&EX[item.dataset.id])acc.textContent='目标 '+EX[item.dataset.id].target;
-        });
-        Object.keys(todayLog).forEach(refreshItem);
-      }
-      updateAllProg();updateStreak();renderSettings();
-      document.getElementById('import-result').style.color='var(--accent)';
-      document.getElementById('import-result').textContent='✓ 导入成功！共 '+Object.keys(imported).length+' 天数据';
-    }catch(err){
-      document.getElementById('import-result').style.color='var(--red)';
-      document.getElementById('import-result').textContent='✗ 导入失败：文件格式不正确';
-    }
-  };
-  reader.readAsText(file);
-  event.target.value='';
-}
+  // top stats
+  const kcalFmt = formatKcalDiff(kcalDiff);
+  html += `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+    <div class="stat-box"><div class="sv" style="font-size:18px">${Object.keys(ex).length}</div><div class="sl">动作数</div></div>
+    <div class="stat-box"><div class="sv" style="font-size:18px">${burn}</div><div class="sl">消耗kcal</div></div>
+    <div class="stat-box"><div class="sv" style="font-size:18px;color:${kcalFmt.color};font-family:var(--mono)">${kcalFmt.text}</div><div class="sl">${kcalDiff !== null ? (kcalDiff < -100 ? '热量缺口✓' : kcalDiff > 100 ? '热量过剩⚠️' : '热量平衡') : '热量差'}</div></div>
+  </div>`;
 
-function renderSettings(){
-  const data=load();
-  const days=Object.keys(data);
-  const activeDays=days.filter(k=>Object.keys(data[k].exercises||{}).length>0);
-  let totalSets=0;
-  activeDays.forEach(d=>{Object.values(data[d].exercises||{}).forEach(e=>totalSets+=e.totalSets||0);});
-  const earliest=activeDays.length?activeDays.sort()[0]:'暂无';
-  const sizeKB=Math.round(JSON.stringify(data).length/1024*10)/10;
-  document.getElementById('data-status').innerHTML=`
+  // daily data
+  html += `<div class="sum-section" style="margin-bottom:10px"><div class="sum-title">每日数据</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div style="background:var(--surface2);border-radius:10px;padding:10px 12px">
-        <div style="font-family:var(--mono);font-size:20px;font-weight:500;color:var(--accent)">${activeDays.length}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">训练天数</div>
-      </div>
-      <div style="background:var(--surface2);border-radius:10px;padding:10px 12px">
-        <div style="font-family:var(--mono);font-size:20px;font-weight:500;color:var(--accent)">${totalSets}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">累计组数</div>
-      </div>
-      <div style="background:var(--surface2);border-radius:10px;padding:10px 12px">
-        <div style="font-family:var(--mono);font-size:14px;font-weight:500;color:var(--accent)">${earliest}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">最早记录</div>
-      </div>
-      <div style="background:var(--surface2);border-radius:10px;padding:10px 12px">
-        <div style="font-family:var(--mono);font-size:20px;font-weight:500;color:var(--accent)">${sizeKB}KB</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">数据大小</div>
-      </div>
+      <div class="stat-box"><div class="sv" style="font-size:18px">${log.weight ? log.weight + 'kg' : '--'}</div><div class="sl">体重</div></div>
+      <div class="stat-box"><div class="sv" style="font-size:18px">${log.sleep ? log.sleep + 'h' : '--'}</div><div class="sl">睡眠</div></div>
+      <div class="stat-box"><div class="sv" style="font-size:18px">${log.kcalIn ? log.kcalIn + 'kcal' : '--'}</div><div class="sl">热量摄入</div></div>
+      <div class="stat-box"><div class="sv" style="font-size:18px">${log.protein ? log.protein + 'g' : '--'}</div><div class="sl">蛋白质</div></div>
+    </div>
+  </div>`;
+  // meal detail
+  if (log.meals && log.meals.length) {
+    html += `<div class="sum-section" style="margin-bottom:10px"><div class="sum-title">饮食明细</div>`;
+    log.meals.forEach(m => {
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div><span style="font-size:13px;font-weight:500">${m.type}</span> <span style="font-size:11px;color:var(--muted)">${m.time || ''}</span>${m.note ? '<div style="font-size:11px;color:var(--dim)">' + m.note + '</div>' : ''}</div>
+        <div style="text-align:right;font-family:var(--mono);font-size:11px;color:var(--orange)">${m.kcal}kcal<br>${m.protein}g蛋白</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  html += `<div class="sum-section" style="margin-bottom:10px"><div class="sum-title">每日数据</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="stat-box"><div class="sv" style="font-size:18px">${log.water ? log.water + 'ml' : '--'}</div><div class="sl">饮水量</div></div>
+      <div class="stat-box"><div class="sv" style="font-size:18px">${log.energy ? em[log.energy] : '--'}</div><div class="sl">状态</div></div>
+    </div>
+  </div>`;
+
+  // exercises by section
+  const sections = { cardio: '热身/心肺', legs: '腿部训练', upper: '上肢训练', core: '核心训练' };
+  const secColors = { cardio: 'var(--orange)', legs: 'var(--blue)', upper: 'var(--purple)', core: 'var(--accent)' };
+  Object.entries(sections).forEach(([sec, name]) => {
+    const secExs = Object.entries(ex).filter(([, e]) => e.section === sec);
+    if (!secExs.length) return;
+    html += `<div class="sum-section" style="margin-bottom:10px"><div class="sum-title" style="color:${secColors[sec]}">${name}</div>`;
+    secExs.forEach(([id, e]) => {
+      const ach = getAchievement(id, e);
+      let detail = '';
+      if (e.type === 'hold') detail = e.totalSets + '组 / ' + e.totalSecs + '秒';
+      else if (e.type === 'run') detail = (e.totalMin || 0) + '分钟 / ' + (e.totalKm || 0) + 'km';
+      else detail = e.totalSets + '组 / ' + e.totalReps + '个';
+      const statusColor = ach.status === 'done' || ach.status === 'over' ? 'var(--accent)' : 'var(--orange)';
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:13px">${EX[id] ? EX[id].name : id} ${ach.label}</span>
+        <span style="font-family:var(--mono);font-size:12px;color:${statusColor}">${detail}</span>
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  if (log.stretch) html += `<div style="background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--accent);margin-bottom:10px">✓ 完成了拉伸</div>`;
+  if (log.note) html += `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--muted);margin-bottom:10px;font-style:italic">"${log.note}"</div>`;
+
+  document.getElementById('hdetail-content').innerHTML = html;
+  document.getElementById('hdetail-overlay').classList.add('open');
+}
+
+function closeDetail() { document.getElementById('hdetail-overlay').classList.remove('open'); }
+
+// ═══════════════════════════════
+// SETTINGS
+// ═══════════════════════════════
+function renderSettings() {
+  const profile = loadProfile();
+  document.getElementById('set-height').value = profile.height || 184;
+  document.getElementById('set-water-goal').value = profile.waterGoal || 2000;
+  const data = load();
+  const days = Object.keys(data).filter(k => Object.keys(data[k].exercises || {}).length > 0);
+  let totalSets = 0;
+  days.forEach(d => { Object.values(data[d].exercises || {}).forEach(e => totalSets += e.totalSets || 0); });
+  const earliest = days.length ? days.sort()[0] : '暂无';
+  const sizeKB = Math.round(JSON.stringify(data).length / 1024 * 10) / 10;
+  document.getElementById('data-status').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="stat-box"><div class="sv">${days.length}</div><div class="sl">训练天数</div></div>
+      <div class="stat-box"><div class="sv">${totalSets}</div><div class="sl">累计组数</div></div>
+      <div class="stat-box"><div class="sv" style="font-size:14px">${earliest}</div><div class="sl">最早记录</div></div>
+      <div class="stat-box"><div class="sv">${sizeKB}KB</div><div class="sl">数据大小</div></div>
     </div>`;
 }
 
-initToday();
-
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js')
-    .then(()=>console.log('SW registered'))
-    .catch(e=>console.log('SW error',e));
+// ═══════════════════════════════
+// EXPORT / IMPORT
+// ═══════════════════════════════
+function exportJSON() {
+  const data = load();
+  if (!Object.keys(data).length) { alert('暂无数据'); return; }
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '训练记录_' + today() + '.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
+
+function exportCSV() {
+  const data = load();
+  if (!Object.keys(data).length) { alert('暂无数据'); return; }
+  const rows = [['日期', '动作', '系列', '类型', '组数', '完成量', '消耗kcal', '体重kg', '睡眠h', '饮水ml', '热量摄入', '蛋白质g', '状态', '拉伸', '备注']];
+  const em = ['', '很累', '一般', '不错', '极佳'];
+  Object.keys(data).sort().forEach(d => {
+    const log = data[d], ex = log.exercises || {};
+    if (!Object.keys(ex).length) {
+      const dKcal = log.kcalIn || (log.meals||[]).reduce((a,m)=>a+(m.kcal||0),0);
+      const dProt = log.protein || (log.meals||[]).reduce((a,m)=>a+(m.protein||0),0);
+      rows.push([d, '', '', '', '', '', '', log.weight || '', log.sleep || '', log.water || '', dKcal || '', dProt || '', em[log.energy || 0], log.stretch ? '是' : '否', log.note || '']);
+    } else {
+      const burn = calcBurnKcal(ex, log.weight || 75);
+      Object.entries(ex).forEach(([id, e], i) => {
+        let val = '';
+        if (e.type === 'hold') val = e.totalSecs + '秒';
+        else if (e.type === 'run') val = (e.totalMin || 0) + '分/' + (e.totalKm || 0) + 'km';
+        else val = e.totalReps + '个';
+        rows.push([d, EX[id] ? EX[id].name : id, e.section, e.type, e.totalSets, val,
+          i === 0 ? burn : '', i === 0 ? (log.weight || '') : '', i === 0 ? (log.sleep || '') : '',
+          i === 0 ? (log.water || '') : '', i === 0 ? (log.kcalIn || (log.meals||[]).reduce((a,m)=>a+(m.kcal||0),0) || '') : '', i === 0 ? (log.protein || (log.meals||[]).reduce((a,m)=>a+(m.protein||0),0) || '') : '',
+          i === 0 ? em[log.energy || 0] : '', i === 0 ? (log.stretch ? '是' : '否') : '', i === 0 ? (log.note || '') : '']);
+      });
+    }
+  });
+  const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = '训练记录_' + today() + '.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+function importJSON(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (typeof imported !== 'object' || Array.isArray(imported)) throw new Error();
+      save(imported);
+      todayLog = {}; waterMl = 0; stretchDone = false; energyLevel = 0;
+      initToday();
+      renderSettings();
+      document.getElementById('import-result').style.color = 'var(--accent)';
+      document.getElementById('import-result').textContent = '✓ 导入成功！共 ' + Object.keys(imported).length + ' 天数据';
+    } catch {
+      document.getElementById('import-result').style.color = 'var(--red)';
+      document.getElementById('import-result').textContent = '✗ 导入失败：文件格式不正确';
+    }
+  };
+  reader.readAsText(file); event.target.value = '';
+}
+
+// ═══════════════════════════════
+// KCAL DIFF FORMATTER
+// ═══════════════════════════════
+function formatKcalDiff(diff) {
+  if (diff === null || isNaN(diff)) return { text: '--', color: 'var(--muted)' };
+  if (Math.abs(diff) <= 100) return { text: (diff >= 0 ? '+' : '') + diff + ' kcal', color: 'var(--text)' };
+  if (diff < 0) return { text: diff + ' kcal', color: 'var(--accent)' };
+  return { text: '+' + diff + ' kcal', color: 'var(--red)' };
+}
+
+// ═══════════════════════════════
+// MEAL FUNCTIONS
+// ═══════════════════════════════
+function calcMealTotals() {
+  return todayMeals.reduce((acc, m) => ({ kcal: acc.kcal + (m.kcal || 0), protein: acc.protein + (m.protein || 0) }), { kcal: 0, protein: 0 });
+}
+
+function renderMealList() {
+  const list = document.getElementById('meal-list');
+  const summary = document.getElementById('meal-summary');
+  if (!list) return;
+  const totals = calcMealTotals();
+  if (!todayMeals.length) {
+    list.innerHTML = '';
+    if (summary) summary.textContent = '未记录';
+    return;
+  }
+  if (summary) summary.textContent = '共' + todayMeals.length + '餐 · ' + totals.kcal + 'kcal / ' + totals.protein + 'g蛋白';
+  list.innerHTML = todayMeals.map((m, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface2);border-radius:10px;margin-bottom:6px">
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500">${m.type || '餐食'} <span style="font-size:11px;color:var(--muted);font-weight:400">${m.time || ''}</span></div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--orange);margin-top:2px">${m.kcal}kcal · 蛋白${m.protein}g${m.note ? ' · ' + m.note : ''}</div>
+      </div>
+      <div style="font-size:16px;cursor:pointer;color:var(--dim);padding:4px" onclick="deleteMeal(${i})">×</div>
+    </div>`).join('');
+  updateAllProg();
+}
+
+function deleteMeal(i) {
+  todayMeals.splice(i, 1);
+  renderMealList();
+  autoSave();
+}
+
+function openMealModal() {
+  curMealType = '';
+  document.getElementById('meal-kcal-input').value = '';
+  document.getElementById('meal-protein-input').value = '';
+  document.getElementById('meal-note').value = '';
+  document.querySelectorAll('#meal-type-row .set-btn').forEach(b => b.classList.remove('selected'));
+  const totals = calcMealTotals();
+  const accEl = document.getElementById('meal-modal-acc');
+  accEl.textContent = todayMeals.length ? '今日已累计 ' + totals.kcal + 'kcal / ' + totals.protein + 'g蛋白' : '';
+  document.getElementById('meal-modal-overlay').classList.add('open');
+}
+
+function closeMealOut(e) { if (e.target === document.getElementById('meal-modal-overlay')) closeMealModal(); }
+function closeMealModal() { document.getElementById('meal-modal-overlay').classList.remove('open'); }
+
+function selectMealType(type, btn) {
+  curMealType = type;
+  document.querySelectorAll('#meal-type-row .set-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function adjMeal(id, d, m) { const el = document.getElementById(id); el.value = Math.max(m, (parseInt(el.value) || 0) + d); }
+
+function confirmMeal() {
+  const kcal = parseInt(document.getElementById('meal-kcal-input').value) || 0;
+  const protein = parseInt(document.getElementById('meal-protein-input').value) || 0;
+  if (!kcal && !protein) { alert('请至少填写热量或蛋白质'); return; }
+  const now = new Date();
+  todayMeals.push({
+    type: curMealType || '餐食',
+    kcal, protein,
+    note: document.getElementById('meal-note').value,
+    time: now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0')
+  });
+  renderMealList();
+  autoSave();
+  closeMealModal();
+}
+
+// ═══════════════════════════════
+// SERVICE WORKER
+// ═══════════════════════════════
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+// ═══════════════════════════════
+// INIT
+// ═══════════════════════════════
+const now = new Date();
+document.getElementById('header-date').textContent = now.getFullYear() + '年' + (now.getMonth() + 1) + '月' + now.getDate() + '日 ' + ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][now.getDay()];
+initToday();
 </script>
 </body>
 </html>
