@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>训练记录</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0e0e;--surface:#1a1a1a;--surface2:#242424;--border:#2e2e2e;--text:#f0ede8;--muted:#666;--dim:#444;--accent:#c8f060;--accent-dim:rgba(200,240,96,0.12);--accent-border:rgba(200,240,96,0.3);--orange:#f0a060;--blue:#60a8f0;--purple:#b060f0;--red:#f06060;--mono:'DM Mono',monospace;--sans:'Noto Sans SC',sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+.header{padding:20px 16px 0;display:flex;align-items:flex-start;justify-content:space-between;}
+.hdate{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:2px;}
+.htitle{font-size:22px;font-weight:700;margin-top:4px;}
+.streak-badge{display:flex;flex-direction:column;align-items:center;background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:12px;padding:8px 12px;min-width:60px;}
+.streak-badge .num{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--accent);line-height:1;}
+.streak-badge .lbl{font-size:10px;color:var(--accent);margin-top:2px;letter-spacing:1px;}
+.tabs{display:flex;gap:4px;padding:20px 16px 0;overflow-x:auto;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{flex-shrink:0;padding:7px 16px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:13px;font-family:var(--sans);cursor:pointer;transition:all .18s;}
+.tab.active{background:var(--text);color:var(--bg);border-color:var(--text);font-weight:500;}
+.page{display:none;padding:16px;}
+.page.active{display:block;}
+/* CARDS */
+.section-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;margin-bottom:12px;overflow:hidden;}
+.section-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;user-select:none;}
+.sdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.sname{font-size:15px;font-weight:500;}
+.ssub{font-size:11px;color:var(--muted);margin-top:1px;}
+.schev{color:var(--dim);font-size:18px;transition:transform .2s;line-height:1;}
+.section-card.open .schev{transform:rotate(90deg);}
+.sprog{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--surface2);padding:3px 8px;border-radius:10px;}
+.sprog.has{color:var(--accent);background:var(--accent-dim);}
+.exercise-list{border-top:1px solid var(--border);display:none;}
+.section-card.open .exercise-list{display:block;}
+.ex-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;}
+.ex-item:last-child{border-bottom:none;}
+.ex-item:active{background:var(--surface2);}
+.ex-check{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--dim);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.ex-item.done .ex-check{background:var(--accent);border-color:var(--accent);}
+.cssvg{display:none;}
+.ex-item.done .cssvg{display:block;}
+.ex-info{flex:1;min-width:0;}
+.ex-name{font-size:14px;}
+.ex-target{font-size:11px;color:var(--muted);margin-top:2px;font-family:var(--mono);}
+.ex-btn{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;flex-shrink:0;white-space:nowrap;max-width:96px;text-align:center;overflow:hidden;text-overflow:ellipsis;}
+.ex-item.done .ex-btn{background:var(--accent-dim);border-color:var(--accent-border);color:var(--accent);}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:flex-end;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:var(--surface);border-radius:24px 24px 0 0;padding:20px 20px 44px;width:100%;max-width:500px;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1);border-top:1px solid var(--border);}
+.modal-overlay.open .modal{transform:translateY(0);}
+.mhandle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;}
+.mtitle{font-size:18px;font-weight:700;margin-bottom:2px;}
+.msub{font-size:12px;color:var(--muted);margin-bottom:4px;font-family:var(--mono);}
+.macc{font-size:12px;color:var(--accent);margin-bottom:16px;min-height:18px;}
+.mlabel{font-size:11px;color:var(--muted);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;}
+.sets-row{display:flex;gap:6px;margin-bottom:18px;}
+.set-btn{flex:1;padding:10px 6px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:var(--mono);font-size:13px;cursor:pointer;text-align:center;transition:all .15s;}
+.set-btn.selected{background:var(--accent-dim);border-color:var(--accent-border);color:var(--accent);}
+.num-row{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+.num-btn{width:42px;height:42px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;user-select:none;transition:background .12s;}
+.num-btn:active{background:var(--border);}
+.num-iw{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;}
+.num-input{background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--accent);font-family:var(--mono);font-size:28px;font-weight:500;text-align:center;width:90px;padding:6px 0;-moz-appearance:textfield;}
+.num-input::-webkit-outer-spin-button,.num-input::-webkit-inner-spin-button{-webkit-appearance:none;}
+.num-input:focus{outline:none;border-color:var(--accent);}
+.num-unit{font-size:14px;color:var(--muted);}
+.run-row{display:flex;gap:8px;margin-bottom:18px;}
+.run-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-family:var(--mono);font-size:16px;text-align:center;-moz-appearance:textfield;}
+.run-input::-webkit-outer-spin-button,.run-input::-webkit-inner-spin-button{-webkit-appearance:none;}
+.run-input:focus{outline:none;border-color:var(--accent);}
+.run-lbl{font-size:11px;color:var(--muted);text-align:center;margin-top:3px;}
+.note-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:var(--sans);font-size:14px;resize:none;height:54px;margin-bottom:14px;}
+.note-input:focus{outline:none;border-color:var(--dim);}
+.note-input::placeholder{color:var(--dim);}
+.mconfirm{width:100%;padding:14px;border-radius:12px;background:var(--accent);color:var(--bg);border:none;font-family:var(--sans);font-size:15px;font-weight:700;cursor:pointer;}
+.mconfirm:active{opacity:.85;}
+/* stretch/energy */
+.stretch-row{display:flex;align-items:center;gap:12px;padding:14px 16px;}
+.s-toggle{width:44px;height:26px;border-radius:13px;background:var(--surface2);border:1px solid var(--border);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.s-toggle.on{background:var(--accent);border-color:var(--accent);}
+.s-toggle::after{content:'';position:absolute;width:20px;height:20px;background:var(--muted);border-radius:50%;top:2px;left:2px;transition:all .2s;}
+.s-toggle.on::after{left:20px;background:var(--bg);}
+.s-label{font-size:14px;color:var(--muted);}
+.s-toggle.on~.s-label{color:var(--text);}
+.energy-row{display:flex;gap:6px;margin-bottom:10px;}
+.energy-btn{flex:1;padding:8px 4px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;cursor:pointer;text-align:center;transition:all .15s;}
+.energy-btn.selected{background:var(--accent-dim);border-color:var(--accent-border);color:var(--accent);}
+.save-btn{width:100%;padding:13px;border-radius:12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;}
+.save-btn:active{background:var(--border);}
+/* SUMMARY */
+.sum-section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;}
+.sum-title{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-family:var(--mono);margin-bottom:14px;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px;}
+.stat-box{background:var(--surface2);border-radius:12px;padding:12px;}
+.stat-box .sv{font-family:var(--mono);font-size:26px;font-weight:500;color:var(--accent);line-height:1;}
+.stat-box .sl{font-size:11px;color:var(--muted);margin-top:4px;}
+/* heatmap */
+.heatmap{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:8px;}
+.hm-cell{aspect-ratio:1;border-radius:3px;background:var(--surface2);}
+.hm-cell.l1{background:rgba(200,240,96,.25);}
+.hm-cell.l2{background:rgba(200,240,96,.5);}
+.hm-cell.l3{background:rgba(200,240,96,.75);}
+.hm-cell.l4{background:#c8f060;}
+.hm-cell.today{outline:2px solid var(--accent);outline-offset:1px;}
+.hm-labels{display:flex;justify-content:space-between;margin-bottom:8px;}
+.hm-lbl{font-family:var(--mono);font-size:10px;color:var(--dim);}
+.hm-legend{display:flex;align-items:center;gap:6px;justify-content:flex-end;}
+.hm-leg-lbl{font-size:10px;color:var(--dim);}
+.hm-leg-cells{display:flex;gap:3px;}
+.hm-leg-cell{width:10px;height:10px;border-radius:2px;}
+/* week chart */
+.week-chart{display:flex;align-items:flex-end;gap:5px;height:70px;margin-bottom:6px;}
+.wbar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;}
+.wbar{width:100%;border-radius:3px 3px 0 0;background:var(--surface2);min-height:3px;position:relative;}
+.wbar.has{background:var(--accent);opacity:.55;}
+.wbar.today{opacity:1;}
+.wday{font-family:var(--mono);font-size:10px;color:var(--dim);}
+.wday.today{color:var(--accent);}
+/* section breakdown */
+.sec-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;}
+.sec-box{border-radius:12px;padding:12px;background:var(--surface2);}
+.sec-box-name{font-size:11px;color:var(--muted);margin-bottom:6px;}
+.sec-box-val{font-family:var(--mono);font-size:20px;font-weight:500;line-height:1;}
+.sec-box-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+/* week compare */
+.compare-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.compare-lbl{font-size:12px;color:var(--muted);min-width:32px;}
+.compare-track{flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;}
+.compare-fill{height:100%;border-radius:4px;}
+.compare-val{font-family:var(--mono);font-size:12px;color:var(--muted);min-width:36px;text-align:right;}
+/* trend */
+.trend-select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;color:var(--text);font-family:var(--sans);font-size:12px;margin-bottom:12px;width:100%;}
+.trend-select:focus{outline:none;}
+.trend-chart{height:80px;position:relative;margin-bottom:4px;}
+.trend-line{width:100%;height:100%;}
+/* bar row */
+.bar-row{margin-bottom:10px;}
+.bar-row-top{display:flex;justify-content:space-between;margin-bottom:4px;}
+.bar-row-name{font-size:13px;}
+.bar-row-count{font-family:var(--mono);font-size:12px;color:var(--muted);}
+.bar-track{height:5px;background:var(--surface2);border-radius:3px;}
+.bar-fill{height:100%;border-radius:3px;background:var(--accent);opacity:.75;}
+/* state trend */
+.state-dots{display:flex;align-items:flex-end;gap:4px;height:50px;margin-bottom:6px;}
+.state-dot-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;}
+.state-dot{width:8px;height:8px;border-radius:50%;background:var(--surface2);}
+.state-dot.e1{background:#f06060;}
+.state-dot.e2{background:var(--orange);}
+.state-dot.e3{background:var(--blue);}
+.state-dot.e4{background:var(--accent);}
+/* HISTORY */
+.history-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;}
+.hdate{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:8px;}
+.htags{display:flex;flex-wrap:wrap;gap:5px;}
+.htag{font-size:11px;padding:3px 8px;border-radius:6px;font-family:var(--mono);}
+.htag.ex{background:var(--accent-dim);color:var(--accent);}
+.htag.info{background:var(--surface2);color:var(--muted);}
+.hnote{font-size:12px;color:var(--dim);margin-top:6px;font-style:italic;}
+.empty-state{text-align:center;padding:48px 20px;color:var(--muted);font-size:13px;line-height:2;}
+.bottom-safe{height:24px;}
+.exp-btn{width:100%;padding:13px;border-radius:12px;background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border);font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;}
+.exp-btn:active{background:var(--accent);color:var(--bg);}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="hdate" id="header-date"></div>
+    <div class="htitle">训练记录</div>
+  </div>
+  <div class="streak-badge">
+    <div class="num" id="streak-num">0</div>
+    <div class="lbl">连续天</div>
+  </div>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('today',this)">今日打卡</div>
+  <div class="tab" onclick="switchTab('summary',this)">汇总统计</div>
+  <div class="tab" onclick="switchTab('history',this)">历史记录</div>
+  <div class="tab" onclick="switchTab('settings',this)">设置</div>
+</div>
+
+<!-- TODAY -->
+<div class="page active" id="page-today">
+  <div class="section-card open" data-section="cardio">
+    <div class="section-header" onclick="toggleSec(this)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="sdot" style="background:var(--orange)"></div>
+        <div><div class="sname">热身 / 心肺</div><div class="ssub">任选完成</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="sprog" id="prog-cardio">0组</div><div class="schev">›</div>
+      </div>
+    </div>
+    <div class="exercise-list" id="list-cardio">
+      <div class="ex-item" data-id="jumping_jack" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">开合跳</div><div class="ex-target" id="acc-jumping_jack">目标 3组×20个</div></div><div class="ex-btn" id="btn-jumping_jack">+记录</div></div>
+      <div class="ex-item" data-id="high_knee_clap" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">高抬腿跨下击掌</div><div class="ex-target" id="acc-high_knee_clap">目标 3组×20个</div></div><div class="ex-btn" id="btn-high_knee_clap">+记录</div></div>
+      <div class="ex-item" data-id="high_knee_twist" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">高抬腿 对侧手肘</div><div class="ex-target" id="acc-high_knee_twist">目标 3组×20个</div></div><div class="ex-btn" id="btn-high_knee_twist">+记录</div></div>
+      <div class="ex-item" data-id="high_knee_side" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">侧面高抬腿 同侧手肘</div><div class="ex-target" id="acc-high_knee_side">目标 3组×20个</div></div><div class="ex-btn" id="btn-high_knee_side">+记录</div></div>
+      <div class="ex-item" data-id="running" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">跑步</div><div class="ex-target" id="acc-running">记录时间/距离</div></div><div class="ex-btn" id="btn-running">+记录</div></div>
+    </div>
+  </div>
+  <div class="section-card open" data-section="legs">
+    <div class="section-header" onclick="toggleSec(this)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="sdot" style="background:var(--blue)"></div>
+        <div><div class="sname">腿部训练</div><div class="ssub">任选完成</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="sprog" id="prog-legs">0组</div><div class="schev">›</div>
+      </div>
+    </div>
+    <div class="exercise-list">
+      <div class="ex-item" data-id="squat" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">普通深蹲</div><div class="ex-target" id="acc-squat">目标 3组×20个</div></div><div class="ex-btn" id="btn-squat">+记录</div></div>
+      <div class="ex-item" data-id="bulgarian" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">保加利亚蹲</div><div class="ex-target" id="acc-bulgarian">目标 3组×20个</div></div><div class="ex-btn" id="btn-bulgarian">+记录</div></div>
+      <div class="ex-item" data-id="lunge" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">弓箭步蹲</div><div class="ex-target" id="acc-lunge">目标 3组×20个</div></div><div class="ex-btn" id="btn-lunge">+记录</div></div>
+    </div>
+  </div>
+  <div class="section-card open" data-section="upper">
+    <div class="section-header" onclick="toggleSec(this)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="sdot" style="background:var(--purple)"></div>
+        <div><div class="sname">上肢训练</div><div class="ssub">任选完成</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="sprog" id="prog-upper">0组</div><div class="schev">›</div>
+      </div>
+    </div>
+    <div class="exercise-list">
+      <div class="ex-item" data-id="pushup_incline" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">斜面俯卧撑</div><div class="ex-target" id="acc-pushup_incline">目标 3组×20个</div></div><div class="ex-btn" id="btn-pushup_incline">+记录</div></div>
+      <div class="ex-item" data-id="pushup_t" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">T字俯卧撑</div><div class="ex-target" id="acc-pushup_t">目标 3组×10个</div></div><div class="ex-btn" id="btn-pushup_t">+记录</div></div>
+      <div class="ex-item" data-id="pushup_arrow" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">箭头俯卧撑</div><div class="ex-target" id="acc-pushup_arrow">目标 3组×5个</div></div><div class="ex-btn" id="btn-pushup_arrow">+记录</div></div>
+      <div class="ex-item" data-id="pushup_elevated" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">脚垫高俯卧撑</div><div class="ex-target" id="acc-pushup_elevated">目标 3组×5个</div></div><div class="ex-btn" id="btn-pushup_elevated">+记录</div></div>
+      <div class="ex-item" data-id="pushup_pike" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">Pike俯卧撑</div><div class="ex-target" id="acc-pushup_pike">目标 3组×8个</div></div><div class="ex-btn" id="btn-pushup_pike">+记录</div></div>
+    </div>
+  </div>
+  <div class="section-card open" data-section="core">
+    <div class="section-header" onclick="toggleSec(this)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="sdot" style="background:var(--accent)"></div>
+        <div><div class="sname">核心训练</div><div class="ssub">任选完成</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="sprog" id="prog-core">0组</div><div class="schev">›</div>
+      </div>
+    </div>
+    <div class="exercise-list">
+      <div class="ex-item" data-id="plank" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">平板支撑</div><div class="ex-target" id="acc-plank">目标 3组×60秒</div></div><div class="ex-btn" id="btn-plank">+记录</div></div>
+      <div class="ex-item" data-id="bench_v" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">凳子悬空 V字支撑</div><div class="ex-target" id="acc-bench_v">目标 3组×60秒</div></div><div class="ex-btn" id="btn-bench_v">+记录</div></div>
+      <div class="ex-item" data-id="bench_scissor" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">凳子悬空 剪刀腿</div><div class="ex-target" id="acc-bench_scissor">目标 3组×20个</div></div><div class="ex-btn" id="btn-bench_scissor">+记录</div></div>
+      <div class="ex-item" data-id="bench_figure8" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">凳子悬空 八字绕环</div><div class="ex-target" id="acc-bench_figure8">目标 3组×20个</div></div><div class="ex-btn" id="btn-bench_figure8">+记录</div></div>
+      <div class="ex-item" data-id="bench_russian" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">凳子悬空 俄罗斯转体</div><div class="ex-target" id="acc-bench_russian">目标 3组×20个</div></div><div class="ex-btn" id="btn-bench_russian">+记录</div></div>
+      <div class="ex-item" data-id="superman" onclick="openModal(this)"><div class="ex-check"><svg class="cssvg" width="12" height="10" viewBox="0 0 12 10"><polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ex-info"><div class="ex-name">背肌两头起</div><div class="ex-target" id="acc-superman">目标 3组×20个</div></div><div class="ex-btn" id="btn-superman">+记录</div></div>
+    </div>
+  </div>
+  <div class="section-card">
+    <div class="stretch-row">
+      <div class="s-toggle" id="stretch-toggle" onclick="toggleStretch()"></div>
+      <span class="s-label">今日完成拉伸</span>
+    </div>
+  </div>
+  <div class="section-card" style="padding:14px 16px">
+    <div style="font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:10px">今日状态</div>
+    <div class="energy-row">
+      <div class="energy-btn" onclick="setEnergy(1,this)">😴<br>很累</div>
+      <div class="energy-btn" onclick="setEnergy(2,this)">😐<br>一般</div>
+      <div class="energy-btn" onclick="setEnergy(3,this)">💪<br>不错</div>
+      <div class="energy-btn" onclick="setEnergy(4,this)">🔥<br>极佳</div>
+    </div>
+    <textarea class="note-input" id="day-note" placeholder="今天感觉怎样...（可选）"></textarea>
+    <button class="save-btn" onclick="saveDay()">保存今日备注</button>
+  </div>
+  <div class="bottom-safe"></div>
+</div>
+
+<!-- SUMMARY -->
+<div class="page" id="page-summary">
+
+  <!-- 核心数字 -->
+  <div class="sum-section">
+    <div class="sum-title">总览</div>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="sv" id="s-days">0</div><div class="sl">训练总天数</div></div>
+      <div class="stat-box"><div class="sv" id="s-streak">0</div><div class="sl">当前连续天</div></div>
+      <div class="stat-box"><div class="sv" id="s-best">0</div><div class="sl">最长连续天</div></div>
+      <div class="stat-box"><div class="sv" id="s-sets">0</div><div class="sl">累计完成组</div></div>
+      <div class="stat-box"><div class="sv" id="s-stretch">0</div><div class="sl">完成拉伸次</div></div>
+      <div class="stat-box"><div class="sv" id="s-thisweek">0</div><div class="sl">本周活跃天</div></div>
+    </div>
+  </div>
+
+  <!-- 热力图 -->
+  <div class="sum-section">
+    <div class="sum-title">过去4周打卡热力图</div>
+    <div class="hm-labels">
+      <span class="hm-lbl">4周前</span><span class="hm-lbl">3周前</span><span class="hm-lbl">2周前</span><span class="hm-lbl">本周</span>
+    </div>
+    <div class="heatmap" id="heatmap"></div>
+    <div class="hm-legend">
+      <span class="hm-leg-lbl">少</span>
+      <div class="hm-leg-cells">
+        <div class="hm-leg-cell" style="background:var(--surface2)"></div>
+        <div class="hm-leg-cell" style="background:rgba(200,240,96,.25)"></div>
+        <div class="hm-leg-cell" style="background:rgba(200,240,96,.5)"></div>
+        <div class="hm-leg-cell" style="background:rgba(200,240,96,.75)"></div>
+        <div class="hm-leg-cell" style="background:#c8f060"></div>
+      </div>
+      <span class="hm-leg-lbl">多</span>
+    </div>
+  </div>
+
+  <!-- 本周vs上周 -->
+  <div class="sum-section">
+    <div class="sum-title">本周 vs 上周</div>
+    <div id="compare-content"></div>
+  </div>
+
+  <!-- 各系列分解 -->
+  <div class="sum-section">
+    <div class="sum-title">各系列累计组数</div>
+    <div class="sec-breakdown">
+      <div class="sec-box"><div class="sec-box-name">🔥 热身/心肺</div><div class="sec-box-val" id="sc-cardio" style="color:var(--orange)">0</div><div class="sec-box-sub">组</div></div>
+      <div class="sec-box"><div class="sec-box-name">🦵 腿部</div><div class="sec-box-val" id="sc-legs" style="color:var(--blue)">0</div><div class="sec-box-sub">组</div></div>
+      <div class="sec-box"><div class="sec-box-name">💪 上肢</div><div class="sec-box-val" id="sc-upper" style="color:var(--purple)">0</div><div class="sec-box-sub">组</div></div>
+      <div class="sec-box"><div class="sec-box-name">🏋️ 核心</div><div class="sec-box-val" id="sc-core" style="color:var(--accent)">0</div><div class="sec-box-sub">组</div></div>
+    </div>
+  </div>
+
+  <!-- 各动作排行 -->
+  <div class="sum-section">
+    <div class="sum-title">各动作完成组数排行</div>
+    <div id="ex-stats"><div class="empty-state">暂无数据</div></div>
+  </div>
+
+  <!-- 单动作进步趋势 -->
+  <div class="sum-section">
+    <div class="sum-title">单动作进步趋势</div>
+    <select class="trend-select" id="trend-select" onchange="renderTrend()"></select>
+    <div class="trend-chart"><svg class="trend-line" id="trend-svg"></svg></div>
+    <div style="font-size:11px;color:var(--muted);text-align:center" id="trend-hint">选择动作查看趋势</div>
+  </div>
+
+  <!-- 状态趋势 -->
+  <div class="sum-section">
+    <div class="sum-title">近14天状态趋势</div>
+    <div class="state-dots" id="state-dots"></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--dim);font-family:var(--mono)" id="state-labels"></div>
+    <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
+      <span style="font-size:11px;color:var(--muted)">😴很累</span>
+      <span style="font-size:11px;color:var(--muted)">😐一般</span>
+      <span style="font-size:11px;color:var(--blue)">💪不错</span>
+      <span style="font-size:11px;color:var(--accent)">🔥极佳</span>
+    </div>
+  </div>
+
+  <div class="bottom-safe"></div>
+</div>
+
+<!-- HISTORY -->
+<div class="page" id="page-history">
+  <div id="history-list"><div class="empty-state">还没有记录<br>完成第一次训练吧 💪</div></div>
+  <div class="bottom-safe"></div>
+</div>
+
+<!-- SETTINGS -->
+<div class="page" id="page-settings">
+
+  <!-- 添加到桌面 -->
+  <div class="sum-section">
+    <div class="sum-title">添加到手机桌面</div>
+    <div style="font-size:13px;color:var(--muted);line-height:1.9;margin-bottom:14px">
+      把训练记录像App一样放到桌面，随时一键打开
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--bg);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">1</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.7">用 <strong>Safari</strong> 浏览器打开这个HTML文件（不能用Chrome）</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--bg);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">2</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.7">点击底部 <strong>分享按钮</strong>（方块加箭头图标）</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--bg);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">3</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.7">向下滚动找到 <strong>「添加到主屏幕」</strong></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--bg);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">4</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.7">名称改为「训练记录」，点右上角 <strong>「添加」</strong> 完成</div>
+      </div>
+    </div>
+    <div style="margin-top:14px;background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--muted);line-height:1.7">
+      ⚠️ 注意：文件需先保存到手机本地（文件App），之后每次从桌面图标打开，数据一直保留
+    </div>
+  </div>
+
+  <!-- 导出 -->
+  <div class="sum-section">
+    <div class="sum-title">导出数据</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.7">
+      建议定期导出备份，换手机或更新功能版本时可以恢复数据
+    </div>
+
+    <div style="margin-bottom:10px">
+      <div style="font-size:13px;font-weight:500;margin-bottom:4px">导出 JSON 格式</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">完整数据备份，可用于导入恢复</div>
+      <button class="exp-btn" onclick="exportJSON()">导出 JSON 备份文件</button>
+    </div>
+
+    <div style="height:1px;background:var(--border);margin:14px 0"></div>
+
+    <div>
+      <div style="font-size:13px;font-weight:500;margin-bottom:4px">导出 CSV 格式</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">可用 Excel / Numbers 打开分析</div>
+      <button class="exp-btn" onclick="exportCSV()">导出 CSV 数据表格</button>
+    </div>
+
+    <div style="margin-top:10px;background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--muted);line-height:1.7">
+      💡 iPhone上导出后文件会出现在「文件」App，可存入iCloud或发送给自己备份
+    </div>
+  </div>
+
+  <!-- 导入 -->
+  <div class="sum-section">
+    <div class="sum-title">导入数据</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.7">
+      从之前导出的 JSON 文件恢复数据，适用于换手机或更新App版本后使用
+    </div>
+    <div style="background:rgba(240,96,96,0.08);border:1px solid rgba(240,96,96,0.2);border-radius:10px;padding:10px 12px;font-size:12px;color:#f09090;margin-bottom:14px;line-height:1.7">
+      ⚠️ 导入会覆盖当前所有数据，请确认已备份现有数据再导入
+    </div>
+    <label class="exp-btn" style="display:block;text-align:center;cursor:pointer">
+      选择 JSON 文件导入
+      <input type="file" accept=".json" onchange="importJSON(event)" style="display:none">
+    </label>
+    <div id="import-result" style="margin-top:10px;font-size:12px;text-align:center;min-height:18px"></div>
+  </div>
+
+  <!-- 数据状态 -->
+  <div class="sum-section">
+    <div class="sum-title">数据状态</div>
+    <div id="data-status" style="font-size:13px;color:var(--muted);line-height:1.9"></div>
+  </div>
+
+  <div class="bottom-safe"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeOut(event)">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle" id="modal-title">-</div>
+    <div class="msub" id="modal-target">-</div>
+    <div class="macc" id="modal-acc"></div>
+    <div id="sec-reps">
+      <div class="mlabel">完成组数</div>
+      <div class="sets-row" id="sets-reps">
+        <div class="set-btn" onclick="setSets(1,this,'sets-reps')">1组</div>
+        <div class="set-btn selected" onclick="setSets(2,this,'sets-reps')">2组</div>
+        <div class="set-btn" onclick="setSets(3,this,'sets-reps')">3组</div>
+      </div>
+      <div class="mlabel">每组次数</div>
+      <div class="num-row">
+        <div class="num-btn" onclick="adj('reps-num',-1,1)">−</div>
+        <div class="num-iw"><input class="num-input" id="reps-num" type="number" min="1" value="20"><span class="num-unit">个</span></div>
+        <div class="num-btn" onclick="adj('reps-num',1,1)">+</div>
+      </div>
+    </div>
+    <div id="sec-hold" style="display:none">
+      <div class="mlabel">完成组数</div>
+      <div class="sets-row" id="sets-hold">
+        <div class="set-btn" onclick="setSets(1,this,'sets-hold')">1组</div>
+        <div class="set-btn selected" onclick="setSets(2,this,'sets-hold')">2组</div>
+        <div class="set-btn" onclick="setSets(3,this,'sets-hold')">3组</div>
+      </div>
+      <div class="mlabel">每组秒数</div>
+      <div class="num-row">
+        <div class="num-btn" onclick="adj('hold-num',-5,5)">−</div>
+        <div class="num-iw"><input class="num-input" id="hold-num" type="number" min="5" step="5" value="60"><span class="num-unit">秒</span></div>
+        <div class="num-btn" onclick="adj('hold-num',5,5)">+</div>
+      </div>
+    </div>
+    <div id="sec-run" style="display:none">
+      <div class="mlabel">时长 / 距离</div>
+      <div class="run-row">
+        <div><input class="run-input" id="run-min" type="number" placeholder="0" min="0"><div class="run-lbl">分钟</div></div>
+        <div><input class="run-input" id="run-km" type="number" placeholder="0.0" min="0" step="0.1"><div class="run-lbl">公里</div></div>
+      </div>
+    </div>
+    <textarea class="note-input" id="modal-note" placeholder="备注（可选）"></textarea>
+    <button class="mconfirm" onclick="confirmLog()">确认 ✓ 累加记录</button>
+  </div>
+</div>
+
+<script>
+const EX={
+  jumping_jack:   {name:'开合跳',            section:'cardio',type:'reps',def:20,target:'3组×20个'},
+  high_knee_clap: {name:'高抬腿跨下击掌',    section:'cardio',type:'reps',def:20,target:'3组×20个'},
+  high_knee_twist:{name:'高抬腿 对侧手肘',   section:'cardio',type:'reps',def:20,target:'3组×20个'},
+  high_knee_side: {name:'侧面高抬腿 同侧手肘',section:'cardio',type:'reps',def:20,target:'3组×20个'},
+  running:        {name:'跑步',              section:'cardio',type:'run', def:0, target:'时间/距离'},
+  squat:          {name:'普通深蹲',          section:'legs',  type:'reps',def:20,target:'3组×20个'},
+  bulgarian:      {name:'保加利亚蹲',        section:'legs',  type:'reps',def:20,target:'3组×20个'},
+  lunge:          {name:'弓箭步蹲',          section:'legs',  type:'reps',def:20,target:'3组×20个'},
+  pushup_incline: {name:'斜面俯卧撑',        section:'upper', type:'reps',def:20,target:'3组×20个'},
+  pushup_t:       {name:'T字俯卧撑',         section:'upper', type:'reps',def:10,target:'3组×10个'},
+  pushup_arrow:   {name:'箭头俯卧撑',        section:'upper', type:'reps',def:5, target:'3组×5个'},
+  pushup_elevated:{name:'脚垫高俯卧撑',      section:'upper', type:'reps',def:5, target:'3组×5个'},
+  pushup_pike:    {name:'Pike俯卧撑',        section:'upper', type:'reps',def:8, target:'3组×8个'},
+  plank:          {name:'平板支撑',          section:'core',  type:'hold',def:60,target:'3组×60秒'},
+  bench_v:        {name:'凳子悬空V字支撑',   section:'core',  type:'hold',def:60,target:'3组×60秒'},
+  bench_scissor:  {name:'凳子悬空剪刀腿',    section:'core',  type:'reps',def:20,target:'3组×20个'},
+  bench_figure8:  {name:'凳子悬空八字绕环',  section:'core',  type:'reps',def:20,target:'3组×20个'},
+  bench_russian:  {name:'凳子悬空俄罗斯转体',section:'core',  type:'reps',def:20,target:'3组×20个'},
+  superman:       {name:'背肌两头起',        section:'core',  type:'reps',def:20,target:'3组×20个'},
+};
+
+let curId=null,curSets=2,todayLog={},stretchDone=false,energyLevel=0;
+const load=()=>JSON.parse(localStorage.getItem('ft_log')||'{}');
+const save=d=>localStorage.setItem('ft_log',JSON.stringify(d));
+const today=()=>new Date().toISOString().slice(0,10);
+const dateStr=d=>{const dt=new Date(d+'T00:00:00');return (dt.getMonth()+1)+'/'+(dt.getDate());};
+
+function initToday(){
+  const data=load(),t=today();
+  if(data[t]){
+    todayLog=data[t].exercises||{};
+    stretchDone=data[t].stretch||false;
+    energyLevel=data[t].energy||0;
+    document.getElementById('day-note').value=data[t].note||'';
+    if(stretchDone)document.getElementById('stretch-toggle').classList.add('on');
+    if(energyLevel)document.querySelectorAll('.energy-btn')[energyLevel-1].classList.add('selected');
+    Object.keys(todayLog).forEach(refreshItem);
+  }
+  updateAllProg();updateStreak();
+}
+
+function refreshItem(id){
+  const log=todayLog[id];if(!log)return;
+  const item=document.querySelector(`[data-id="${id}"]`);
+  const btn=document.getElementById('btn-'+id);
+  const acc=document.getElementById('acc-'+id);
+  if(!item)return;
+  item.classList.add('done');
+  if(log.type==='run'){
+    const p=[];
+    if(log.totalMin)p.push(log.totalMin+'分钟');
+    if(log.totalKm)p.push(log.totalKm+'km');
+    if(btn)btn.textContent=p.join(' ')||'已记录';
+    if(acc)acc.textContent='累计: '+(p.join(' ')||'-');
+  }else if(log.type==='hold'){
+    if(btn)btn.textContent=log.totalSets+'组×'+Math.round(log.totalSecs/Math.max(1,log.totalSets))+'秒';
+    if(acc)acc.textContent='累计: '+log.totalSets+'组 / '+log.totalSecs+'秒';
+  }else{
+    if(btn)btn.textContent=log.totalSets+'组×'+Math.round(log.totalReps/Math.max(1,log.totalSets))+'个';
+    if(acc)acc.textContent='累计: '+log.totalSets+'组 / '+log.totalReps+'个';
+  }
+}
+
+function updateAllProg(){
+  ['cardio','legs','upper','core'].forEach(s=>{
+    let tot=0;
+    Object.values(todayLog).forEach(e=>{if(e.section===s)tot+=e.totalSets||0;});
+    const el=document.getElementById('prog-'+s);
+    if(el){el.textContent=tot+'组';el.className='sprog'+(tot>0?' has':'');}
+  });
+}
+
+function calcStreak(data){
+  let streak=0,best=0,cur=0,d=new Date();
+  for(let i=0;i<365;i++){
+    const k=d.toISOString().slice(0,10);
+    if(data[k]&&Object.keys(data[k].exercises||{}).length>0){streak++;d.setDate(d.getDate()-1);}
+    else if(i===0){d.setDate(d.getDate()-1);}
+    else break;
+  }
+  // best streak
+  const days=Object.keys(data).filter(k=>Object.keys(data[k].exercises||{}).length>0).sort();
+  for(let i=0;i<days.length;i++){
+    if(i===0){cur=1;}
+    else{
+      const prev=new Date(days[i-1]+'T00:00:00');
+      const curr=new Date(days[i]+'T00:00:00');
+      cur=((curr-prev)/86400000===1)?cur+1:1;
+    }
+    if(cur>best)best=cur;
+  }
+  return{streak,best};
+}
+
+function updateStreak(){
+  const data=load();
+  const{streak,best}=calcStreak(data);
+  document.getElementById('streak-num').textContent=streak;
+}
+
+function toggleSec(hdr){hdr.closest('.section-card').classList.toggle('open');}
+
+function openModal(item){
+  curId=item.dataset.id;
+  const ex=EX[curId];curSets=2;
+  document.getElementById('modal-title').textContent=ex.name;
+  document.getElementById('modal-target').textContent='目标 '+ex.target;
+  document.getElementById('modal-note').value='';
+  const log=todayLog[curId];
+  const accEl=document.getElementById('modal-acc');
+  if(log){
+    if(log.type==='hold')accEl.textContent='今日已累计 '+log.totalSets+'组 / '+log.totalSecs+'秒';
+    else if(log.type==='run')accEl.textContent='今日已累计 '+(log.totalMin||0)+'分钟 '+(log.totalKm||0)+'km';
+    else accEl.textContent='今日已累计 '+log.totalSets+'组 / '+log.totalReps+'个';
+  }else accEl.textContent='';
+  document.getElementById('sec-reps').style.display=ex.type==='reps'?'':'none';
+  document.getElementById('sec-hold').style.display=ex.type==='hold'?'':'none';
+  document.getElementById('sec-run').style.display=ex.type==='run'?'':'none';
+  if(ex.type==='reps'){document.getElementById('reps-num').value=ex.def;document.querySelectorAll('#sets-reps .set-btn').forEach((b,i)=>b.classList.toggle('selected',i===1));}
+  else if(ex.type==='hold'){document.getElementById('hold-num').value=ex.def;document.querySelectorAll('#sets-hold .set-btn').forEach((b,i)=>b.classList.toggle('selected',i===1));}
+  else{document.getElementById('run-min').value='';document.getElementById('run-km').value='';}
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeOut(e){if(e.target===document.getElementById('modal-overlay'))closeModal();}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
+function setSets(n,btn,rowId){curSets=n;document.querySelectorAll('#'+rowId+' .set-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');}
+function adj(id,d,m){const el=document.getElementById(id);el.value=Math.max(m,(parseInt(el.value)||0)+d);}
+
+function confirmLog(){
+  if(!curId)return;
+  const ex=EX[curId];
+  const existing=todayLog[curId]||{section:ex.section,type:ex.type,totalSets:0,totalReps:0,totalSecs:0,totalMin:0,totalKm:0};
+  if(ex.type==='reps'){const r=parseInt(document.getElementById('reps-num').value)||ex.def;existing.totalSets+=curSets;existing.totalReps+=curSets*r;}
+  else if(ex.type==='hold'){const s=parseInt(document.getElementById('hold-num').value)||ex.def;existing.totalSets+=curSets;existing.totalSecs+=curSets*s;}
+  else{const m=parseFloat(document.getElementById('run-min').value)||0;const k=parseFloat(document.getElementById('run-km').value)||0;existing.totalSets+=1;existing.totalMin=parseFloat(((existing.totalMin||0)+m).toFixed(1));existing.totalKm=parseFloat(((existing.totalKm||0)+k).toFixed(2));}
+  existing.lastNote=document.getElementById('modal-note').value;
+  todayLog[curId]=existing;
+  refreshItem(curId);updateAllProg();autoSave();closeModal();
+}
+
+function toggleStretch(){stretchDone=!stretchDone;document.getElementById('stretch-toggle').classList.toggle('on',stretchDone);autoSave();}
+function setEnergy(n,btn){energyLevel=n;document.querySelectorAll('.energy-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');autoSave();}
+function autoSave(){const data=load(),t=today();data[t]=data[t]||{};data[t].exercises=todayLog;data[t].stretch=stretchDone;data[t].energy=energyLevel;data[t].note=document.getElementById('day-note').value;save(data);updateStreak();}
+function saveDay(){autoSave();alert('已保存！');}
+
+function switchTab(tab,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('page-'+tab).classList.add('active');
+  if(tab==='summary')renderSummary();
+  if(tab==='history')renderHistory();
+  if(tab==='settings')renderSettings();
+}
+
+function renderSummary(){
+  const data=load();
+  const days=Object.keys(data).filter(k=>Object.keys(data[k].exercises||{}).length>0);
+  document.getElementById('s-days').textContent=days.length;
+  const{streak,best}=calcStreak(data);
+  document.getElementById('s-streak').textContent=streak;
+  document.getElementById('s-best').textContent=best;
+
+  let totalSets=0,totalStretch=0;
+  const secSets={cardio:0,legs:0,upper:0,core:0};
+  const exCount={};
+  days.forEach(d=>{
+    const ex=data[d].exercises||{};
+    if(data[d].stretch)totalStretch++;
+    Object.entries(ex).forEach(([id,e])=>{
+      const s=e.totalSets||0;
+      totalSets+=s;
+      secSets[e.section]=(secSets[e.section]||0)+s;
+      exCount[id]=(exCount[id]||0)+s;
+    });
+  });
+  document.getElementById('s-sets').textContent=totalSets;
+  document.getElementById('s-stretch').textContent=totalStretch;
+
+  // this week active
+  const mon=new Date();mon.setDate(mon.getDate()-mon.getDay()+1);
+  let thisWeek=0;
+  for(let i=0;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);const k=d.toISOString().slice(0,10);if(data[k]&&Object.keys(data[k].exercises||{}).length>0)thisWeek++;}
+  document.getElementById('s-thisweek').textContent=thisWeek;
+
+  // section counts
+  document.getElementById('sc-cardio').textContent=secSets.cardio||0;
+  document.getElementById('sc-legs').textContent=secSets.legs||0;
+  document.getElementById('sc-upper').textContent=secSets.upper||0;
+  document.getElementById('sc-core').textContent=secSets.core||0;
+
+  // heatmap 28 days
+  const hm=document.getElementById('heatmap');hm.innerHTML='';
+  const hmDays=[];for(let i=27;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);hmDays.push(d.toISOString().slice(0,10));}
+  const maxHm=Math.max(1,...hmDays.map(d=>Object.keys((data[d]||{}).exercises||{}).length));
+  hmDays.forEach(d=>{
+    const c=Object.keys((data[d]||{}).exercises||{}).length;
+    const isT=d===today();
+    let lv='';if(c>0){const r=c/maxHm;lv=r>.75?'l4':r>.5?'l3':r>.25?'l2':'l1';}
+    hm.innerHTML+=`<div class="hm-cell ${lv} ${isT?'today':''}" title="${d}: ${c}个动作"></div>`;
+  });
+
+  // week compare
+  const thisW=[],lastW=[];
+  const now=new Date();
+  const dow=now.getDay()===0?6:now.getDay()-1;
+  for(let i=0;i<7;i++){
+    const dt=new Date(now);dt.setDate(now.getDate()-dow+i);
+    const k=dt.toISOString().slice(0,10);
+    thisW.push(Object.values((data[k]||{}).exercises||{}).reduce((a,e)=>a+(e.totalSets||0),0));
+    const lk=new Date(dt);lk.setDate(dt.getDate()-7);
+    lastW.push(Object.values((data[lk.toISOString().slice(0,10)]||{}).exercises||{}).reduce((a,e)=>a+(e.totalSets||0),0));
+  }
+  const twTotal=thisW.reduce((a,b)=>a+b,0);
+  const lwTotal=lastW.reduce((a,b)=>a+b,0);
+  const maxCmp=Math.max(1,twTotal,lwTotal);
+  const diff=twTotal-lwTotal;
+  const diffStr=diff>0?`↑ 多${diff}组`:diff<0?`↓ 少${Math.abs(diff)}组`:'持平';
+  const diffColor=diff>0?'var(--accent)':diff<0?'var(--red)':'var(--muted)';
+  document.getElementById('compare-content').innerHTML=`
+    <div class="compare-row"><span class="compare-lbl">本周</span><div class="compare-track"><div class="compare-fill" style="width:${Math.round(twTotal/maxCmp*100)}%;background:var(--accent)"></div></div><span class="compare-val">${twTotal}组</span></div>
+    <div class="compare-row"><span class="compare-lbl">上周</span><div class="compare-track"><div class="compare-fill" style="width:${Math.round(lwTotal/maxCmp*100)}%;background:var(--muted)"></div></div><span class="compare-val">${lwTotal}组</span></div>
+    <div style="text-align:center;font-size:13px;color:${diffColor};margin-top:4px">${diffStr}</div>`;
+
+  // ex ranking
+  const cont=document.getElementById('ex-stats');
+  const sorted=Object.entries(exCount).sort((a,b)=>b[1]-a[1]);
+  if(!sorted.length){cont.innerHTML='<div class="empty-state">暂无数据</div>';return;}
+  const maxV=sorted[0][1];
+  cont.innerHTML=sorted.map(([id,c])=>`<div class="bar-row">
+    <div class="bar-row-top"><span class="bar-row-name">${EX[id]?EX[id].name:id}</span><span class="bar-row-count">${c}组</span></div>
+    <div class="bar-track"><div class="bar-fill" style="width:${Math.round(c/maxV*100)}%"></div></div>
+  </div>`).join('');
+
+  // trend select
+  const sel=document.getElementById('trend-select');
+  const prevVal=sel.value;
+  sel.innerHTML='<option value="">— 选择动作 —</option>'+sorted.map(([id])=>`<option value="${id}">${EX[id]?EX[id].name:id}</option>`).join('');
+  if(prevVal)sel.value=prevVal;
+  renderTrend();
+
+  // state dots 14 days
+  const sdots=document.getElementById('state-dots');
+  const slabels=document.getElementById('state-labels');
+  sdots.innerHTML='';slabels.innerHTML='';
+  const sd14=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);sd14.push(d.toISOString().slice(0,10));}
+  sd14.forEach(d=>{
+    const e=data[d]&&data[d].energy||0;
+    const cls=e?'e'+e:'';
+    const h=e?[0,12,24,36,48][e]:8;
+    sdots.innerHTML+=`<div class="state-dot-wrap"><div class="state-dot ${cls}" style="height:${h}px;width:${h}px;margin-bottom:${(48-h)/2}px"></div></div>`;
+    slabels.innerHTML+=`<div style="flex:1;text-align:center">${dateStr(d)}</div>`;
+  });
+}
+
+function renderTrend(){
+  const sel=document.getElementById('trend-select');
+  const id=sel.value;
+  const svg=document.getElementById('trend-svg');
+  const hint=document.getElementById('trend-hint');
+  if(!id){svg.innerHTML='';hint.textContent='选择动作查看趋势';return;}
+  const data=load();
+  const ex=EX[id];
+  // last 14 days
+  const pts=[];
+  for(let i=13;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const k=d.toISOString().slice(0,10);
+    const log=(data[k]||{}).exercises||{};
+    const entry=log[id];
+    let val=0;
+    if(entry){
+      if(entry.type==='hold')val=entry.totalSecs||0;
+      else if(entry.type==='run')val=entry.totalMin||0;
+      else val=entry.totalReps||0;
+    }
+    pts.push({d:k,v:val});
+  }
+  const maxV=Math.max(1,...pts.map(p=>p.v));
+  const W=300,H=70,pad=4;
+  const xs=pts.map((_,i)=>pad+i*(W-pad*2)/13);
+  const ys=pts.map(p=>H-pad-(p.v/maxV)*(H-pad*2));
+  const pathD='M'+xs.map((x,i)=>`${x},${ys[i]}`).join('L');
+  const filled='M'+xs[0]+','+H+' L'+xs.map((x,i)=>`${x},${ys[i]}`).join('L')+' L'+xs[xs.length-1]+','+H+'Z';
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  svg.innerHTML=`
+    <path d="${filled}" fill="rgba(200,240,96,0.12)"/>
+    <path d="${pathD}" fill="none" stroke="#c8f060" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    ${pts.map((p,i)=>p.v>0?`<circle cx="${xs[i]}" cy="${ys[i]}" r="3" fill="#c8f060"/>`:'').join('')}`;
+  const unit=ex.type==='hold'?'秒':ex.type==='run'?'分钟':'个';
+  const hasDays=pts.filter(p=>p.v>0);
+  hint.textContent=hasDays.length>0?`最近有记录 ${hasDays.length} 天，最高 ${Math.max(...hasDays.map(p=>p.v))}${unit}`:'近14天暂无该动作记录';
+}
+
+function renderHistory(){
+  const data=load();
+  const days=Object.keys(data).sort((a,b)=>b.localeCompare(a));
+  const cont=document.getElementById('history-list');
+  if(!days.length){cont.innerHTML='<div class="empty-state">还没有记录<br>完成第一次训练吧 💪</div>';return;}
+  const em=['','😴很累','😐一般','💪不错','🔥极佳'];
+  cont.innerHTML=days.map(d=>{
+    const log=data[d],ex=log.exercises||{};
+    if(!Object.keys(ex).length&&!log.stretch&&!log.energy&&!log.note)return'';
+    const tags=Object.entries(ex).map(([id,e])=>{
+      let detail='';
+      if(e.type==='hold')detail=e.totalSets+'组/'+e.totalSecs+'秒';
+      else if(e.type==='run')detail=(e.totalMin||0)+'分'+(e.totalKm?'/'+e.totalKm+'km':'');
+      else detail=e.totalSets+'组/'+e.totalReps+'个';
+      return`<div class="htag ex">${EX[id]?EX[id].name:id} ${detail}</div>`;
+    }).join('');
+    const stretch=log.stretch?'<div class="htag info">拉伸✓</div>':'';
+    const energy=log.energy?`<div class="htag info">${em[log.energy]}</div>`:'';
+    const note=log.note?`<div class="hnote">${log.note}</div>`:'';
+    return`<div class="history-item"><div class="hdate">${d} · ${Object.keys(ex).length}个动作</div><div class="htags">${tags}${stretch}${energy}</div>${note}</div>`;
+  }).filter(Boolean).join('');
+  if(!cont.innerHTML)cont.innerHTML='<div class="empty-state">还没有记录<br>完成第一次训练吧 💪</div>';
+}
+
+const now=new Date();
+document.getElementById('header-date').textContent=now.getFullYear()+'年'+(now.getMonth()+1)+'月'+now.getDate()+'日 '+['周日','周一','周二','周三','周四','周五','周六'][now.getDay()];
+function exportJSON(){
+  const data=load();
+  if(!Object.keys(data).length){alert('暂无数据可导出');return;}
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const dateStr=new Date().toISOString().slice(0,10);
+  a.href=url;a.download='训练记录_'+dateStr+'.json';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+function exportCSV(){
+  const data=load();
+  if(!Object.keys(data).length){alert('暂无数据可导出');return;}
+  const rows=[['日期','动作','系列','类型','组数','次数/秒数','备注','状态','拉伸','日记']];
+  Object.keys(data).sort().forEach(d=>{
+    const log=data[d];
+    const ex=log.exercises||{};
+    const em=['','很累','一般','不错','极佳'];
+    if(Object.keys(ex).length===0){
+      rows.push([d,'','','','','','',em[log.energy||0],log.stretch?'是':'否',log.note||'']);
+    } else {
+      Object.entries(ex).forEach(([id,e],i)=>{
+        let val='';
+        if(e.type==='hold')val=e.totalSecs+'秒';
+        else if(e.type==='run')val=(e.totalMin||0)+'分钟/'+(e.totalKm||0)+'km';
+        else val=e.totalReps+'个';
+        rows.push([
+          d,
+          EX[id]?EX[id].name:id,
+          e.section,
+          e.type==='hold'?'支撑':e.type==='run'?'跑步':'次数',
+          e.totalSets,
+          val,
+          e.lastNote||'',
+          i===0?em[log.energy||0]:'',
+          i===0?(log.stretch?'是':'否'):'',
+          i===0?(log.note||''):'',
+        ]);
+      });
+    }
+  });
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const dateStr=new Date().toISOString().slice(0,10);
+  a.href=url;a.download='训练记录_'+dateStr+'.csv';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+function importJSON(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const imported=JSON.parse(e.target.result);
+      if(typeof imported!=='object'||Array.isArray(imported))throw new Error('格式错误');
+      save(imported);
+      todayLog={};stretchDone=false;energyLevel=0;
+      // reload today
+      const t=today();
+      if(imported[t]){
+        todayLog=imported[t].exercises||{};
+        stretchDone=imported[t].stretch||false;
+        energyLevel=imported[t].energy||0;
+        document.getElementById('day-note').value=imported[t].note||'';
+        if(stretchDone)document.getElementById('stretch-toggle').classList.add('on');
+        document.querySelectorAll('.energy-btn').forEach(b=>b.classList.remove('selected'));
+        if(energyLevel)document.querySelectorAll('.energy-btn')[energyLevel-1].classList.add('selected');
+        document.querySelectorAll('.ex-item').forEach(item=>{
+          item.classList.remove('done');
+          const btn=document.getElementById('btn-'+item.dataset.id);
+          if(btn)btn.textContent='+记录';
+          const acc=document.getElementById('acc-'+item.dataset.id);
+          if(acc&&EX[item.dataset.id])acc.textContent='目标 '+EX[item.dataset.id].target;
+        });
+        Object.keys(todayLog).forEach(refreshItem);
+      }
+      updateAllProg();updateStreak();renderSettings();
+      document.getElementById('import-result').style.color='var(--accent)';
+      document.getElementById('import-result').textContent='✓ 导入成功！共 '+Object.keys(imported).length+' 天数据';
+    }catch(err){
+      document.getElementById('import-result').style.color='var(--red)';
+      document.getElementById('import-result').textContent='✗ 导入失败：文件格式不正确';
+    }
+  };
+  reader.readAsText(file);
+  event.target.value='';
+}
+
+function renderSettings(){
+  const data=load();
+  const days=Object.keys(data);
+  const activeDays=days.filter(k=>Object.keys(data[k].exercises||{}).length>0);
+  let totalSets=0;
+  activeDays.forEach(d=>{Object.values(data[d].exercises||{}).forEach(e=>totalSets+=e.totalSets||0);});
+  const earliest=activeDays.length?activeDays.sort()[0]:'暂无';
+  const sizeKB=Math.round(JSON.stringify(data).length/1024*10)/10;
+  document.getElementById('data-status').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div style="background:var(--surface2);border-radius:10px;padding:10px 12px">
+        <div style="font-family:var(--mono);font-size:20px;font-weight:500;color:var(--accent)">${activeDays.length}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">训练天数</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:10px;padding:10px 12px">
+        <div style="font-family:var(--mono);font-size:20px;font-weight:500;color:var(--accent)">${totalSets}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">累计组数</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:10px;padding:10px 12px">
+        <div style="font-family:var(--mono);font-size:14px;font-weight:500;color:var(--accent)">${earliest}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">最早记录</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:10px;padding:10px 12px">
+        <div style="font-family:var(--mono);font-size:20px;font-weight:500;color:var(--accent)">${sizeKB}KB</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">数据大小</div>
+      </div>
+    </div>`;
+}
+
+initToday();
+</script>
+</body>
+</html>
