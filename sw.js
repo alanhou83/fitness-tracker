@@ -1,46 +1,41 @@
-const CACHE = 'fitness-v2';
-const FILES = [
-  './',
-  './index.html',
-  'https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;700&display=swap'
-];
+const CACHE = 'fitness-v4';
+const FILES = ['./', './index.html'];
 
-// 安装：缓存所有文件
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(FILES)).then(() => self.skipWaiting())
+    caches.open(CACHE)
+      .then(cache => cache.addAll(FILES))
+      .then(() => self.skipWaiting())
   );
 });
 
-// 激活：清除旧缓存
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
 });
 
-// 请求拦截：优先用缓存，网络失败时回退缓存
+// 网络优先策略：优先用网络，网络失败才用缓存
+// 这样能保证数据不丢失，同时支持离线
 self.addEventListener('fetch', e => {
+  // 只处理GET请求
+  if (e.request.method !== 'GET') return;
+  
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) {
-        // 后台更新缓存
-        fetch(e.request).then(res => {
-          if (res && res.status === 200) {
-            caches.open(CACHE).then(cache => cache.put(e.request, res.clone()));
-          }
-        }).catch(() => {});
-        return cached;
-      }
-      // 没有缓存则联网获取
-      return fetch(e.request).then(res => {
-        if (!res || res.status !== 200) return res;
-        const clone = res.clone();
-        caches.open(CACHE).then(cache => cache.put(e.request, clone));
+    fetch(e.request)
+      .then(res => {
+        // 网络成功，更新缓存
+        if (res && res.status === 200) {
+          const clone = res.clone();
+          caches.open(CACHE).then(cache => cache.put(e.request, clone));
+        }
         return res;
-      }).catch(() => caches.match('./index.html'));
-    })
+      })
+      .catch(() => {
+        // 网络失败，用缓存（离线模式）
+        return caches.match(e.request).then(cached => cached || caches.match('./index.html'));
+      })
   );
 });
