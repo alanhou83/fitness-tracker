@@ -941,6 +941,12 @@ function renderSettings(){
 }
 
 initToday();
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js')
+    .then(()=>console.log('SW registered'))
+    .catch(e=>console.log('SW error',e));
+}
 </script>
 </body>
 </html>
