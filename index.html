@@ -1006,7 +1006,6 @@ function initToday() {
     document.getElementById('day-note').value = data[t].note || '';
     document.getElementById('input-weight').value = data[t].weight || '';
     document.getElementById('input-sleep').value = data[t].sleep || '';
-    document.getElementById('input-kcal').value = data[t].kcalIn || '';
     todayMeals = data[t].meals || [];
     renderMealList();
     if (stretchDone) document.getElementById('stretch-toggle').classList.add('on');

@@ -1,4 +1,4 @@
-const CACHE = 'fitness-v6';
+const CACHE = 'fitness-v7';
 const FILES = ['./', './index.html'];
 
 self.addEventListener('install', e => {
