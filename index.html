@@ -1531,9 +1531,10 @@ function importJSON(event) {
       renderSettings();
       document.getElementById('import-result').style.color = 'var(--accent)';
       document.getElementById('import-result').textContent = '✓ 导入成功！共 ' + Object.keys(imported).length + ' 天数据';
-    } catch {
+    } catch(err) {
+      console.log('Import error:', err);
       document.getElementById('import-result').style.color = 'var(--red)';
-      document.getElementById('import-result').textContent = '✗ 导入失败：文件格式不正确';
+      document.getElementById('import-result').textContent = '✗ 导入失败：' + (err.message || '文件格式不正确');
     }
   };
   reader.readAsText(file); event.target.value = '';
