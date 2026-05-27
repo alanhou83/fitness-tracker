@@ -794,7 +794,12 @@ const load = () => JSON.parse(localStorage.getItem('ft_log') || '{}');
 const save = d => localStorage.setItem('ft_log', JSON.stringify(d));
 const loadProfile = () => JSON.parse(localStorage.getItem('ft_profile') || '{"height":184,"waterGoal":2000}');
 const saveProfileStore = p => localStorage.setItem('ft_profile', JSON.stringify(p));
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => localDate(new Date());
+const localDate = (d) => {
+  return d.getFullYear() + '-' +
+    String(d.getMonth()+1).padStart(2,'0') + '-' +
+    String(d.getDate()).padStart(2,'0');
+};
 
 let curId = null, curSets = 2;
 let todayLog = {}, waterMl = 0, stretchDone = false, energyLevel = 0;
@@ -964,7 +969,7 @@ function calcStreak(data) {
   let streak = 0, best = 0, cur = 0;
   const d = new Date();
   for (let i = 0; i < 365; i++) {
-    const k = d.toISOString().slice(0, 10);
+    const k = localDate(d);
     if (data[k] && Object.keys(data[k].exercises || {}).length > 0) { streak++; d.setDate(d.getDate() - 1); }
     else if (i === 0) { d.setDate(d.getDate() - 1); }
     else break;
@@ -1164,7 +1169,7 @@ function renderSummary() {
   document.getElementById('s-stretch').textContent = totalStretch;
   const mon = new Date(); mon.setDate(mon.getDate() - mon.getDay() + 1);
   let thisWeek = 0;
-  for (let i = 0; i < 7; i++) { const d = new Date(mon); d.setDate(mon.getDate() + i); if (data[d.toISOString().slice(0, 10)] && Object.keys(data[d.toISOString().slice(0, 10)].exercises || {}).length > 0) thisWeek++; }
+  for (let i = 0; i < 7; i++) { const d = new Date(mon); d.setDate(mon.getDate() + i); if (data[localDate(d)] && Object.keys(data[localDate(d)].exercises || {}).length > 0) thisWeek++; }
   document.getElementById('s-thisweek').textContent = thisWeek;
   document.getElementById('sc-cardio').textContent = secSets.cardio || 0;
   document.getElementById('sc-legs').textContent = secSets.legs || 0;
@@ -1176,7 +1181,7 @@ function renderSummary() {
 
   // health stats 7 days
   const healthEl = document.getElementById('health-stats');
-  const h7 = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); h7.push(d.toISOString().slice(0, 10)); }
+  const h7 = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); h7.push(localDate(d)); }
   let avgSleep = 0, sleepDays = 0, avgKcal = 0, kcalDays = 0, avgProtein = 0, proteinDays = 0, avgWater = 0;
   h7.forEach(d => {
     const log = data[d]; if (!log) return;
@@ -1219,7 +1224,7 @@ function renderSummary() {
 
   // heatmap
   const hm = document.getElementById('heatmap'); hm.innerHTML = '';
-  const hmDays = []; for (let i = 27; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); hmDays.push(d.toISOString().slice(0, 10)); }
+  const hmDays = []; for (let i = 27; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); hmDays.push(localDate(d)); }
   const maxHm = Math.max(1, ...hmDays.map(d => Object.keys((data[d] || {}).exercises || {}).length));
   hmDays.forEach(d => {
     const c = Object.keys((data[d] || {}).exercises || {}).length;
@@ -1237,9 +1242,9 @@ function renderSummary() {
   let twTotal = 0, lwTotal = 0;
   for (let i = 0; i < 7; i++) {
     const dt = new Date(now); dt.setDate(now.getDate() - dow + i);
-    twTotal += Object.values((data[dt.toISOString().slice(0, 10)] || {}).exercises || {}).reduce((a, e) => a + (e.totalSets || 0), 0);
+    twTotal += Object.values((data[localDate(dt)] || {}).exercises || {}).reduce((a, e) => a + (e.totalSets || 0), 0);
     const lk = new Date(dt); lk.setDate(dt.getDate() - 7);
-    lwTotal += Object.values((data[lk.toISOString().slice(0, 10)] || {}).exercises || {}).reduce((a, e) => a + (e.totalSets || 0), 0);
+    lwTotal += Object.values((data[localDate(lk)] || {}).exercises || {}).reduce((a, e) => a + (e.totalSets || 0), 0);
   }
   const maxCmp = Math.max(1, twTotal, lwTotal);
   const diff = twTotal - lwTotal;
@@ -1271,7 +1276,7 @@ function renderSummary() {
 function renderLineSVG(svgId, hintId, days, getter, unit, color) {
   const data = load();
   const pts = [];
-  for (let i = days - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const k = d.toISOString().slice(0, 10); pts.push({ d: k, v: getter(k) || null }); }
+  for (let i = days - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const k = localDate(d); pts.push({ d: k, v: getter(k) || null }); }
   const svg = document.getElementById(svgId);
   const hint = document.getElementById(hintId);
   const valid = pts.filter(p => p.v !== null);
@@ -1297,7 +1302,7 @@ function renderTrend() {
   if (!id) { svg.innerHTML = ''; hint.textContent = '选择动作查看趋势'; return; }
   const data = load(); const ex = EX[id];
   const pts = [];
-  for (let i = 13; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const k = d.toISOString().slice(0, 10); const log = (data[k] || {}).exercises || {}; const entry = log[id]; let val = 0; if (entry) { if (entry.type === 'hold') val = entry.totalSecs || 0; else if (entry.type === 'run') val = entry.totalMin || 0; else val = entry.totalReps || 0; } pts.push({ d: k, v: val }); }
+  for (let i = 13; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const k = localDate(d); const log = (data[k] || {}).exercises || {}; const entry = log[id]; let val = 0; if (entry) { if (entry.type === 'hold') val = entry.totalSecs || 0; else if (entry.type === 'run') val = entry.totalMin || 0; else val = entry.totalReps || 0; } pts.push({ d: k, v: val }); }
   const maxV = Math.max(1, ...pts.map(p => p.v));
   const W = 300, H = 70, pad = 4;
   const xs = pts.map((_, i) => pad + i * (W - pad * 2) / 13);
@@ -1320,7 +1325,7 @@ function renderStateDots() {
   const clrs = ['', '#f06060', '#f0a060', '#60a8f0', '#c8f060'];
   for (let i = 13; i >= 0; i--) {
     const d = new Date(); d.setDate(d.getDate() - i);
-    const k = d.toISOString().slice(0, 10);
+    const k = localDate(d);
     const e = data[k]?.energy || 0;
     const h = e ? [0, 14, 24, 36, 48][e] : 8;
     sdots.innerHTML += `<div class="state-dot-wrap"><div class="state-dot" style="width:${h}px;height:${h}px;background:${clrs[e] || 'var(--surface2)'}"></div></div>`;
