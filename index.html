@@ -234,6 +234,22 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .step-txt{font-size:13px;color:var(--text);line-height:1.7;}
 
 .empty-state{text-align:center;padding:48px 20px;color:var(--muted);font-size:13px;line-height:2;}
+/* FEELING TAGS */
+.feel-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.feel-tag{padding:6px 10px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);font-size:14px;cursor:pointer;transition:all .15s;user-select:none;}
+.feel-tag.selected{border-color:var(--accent);background:var(--accent-dim);}
+.feel-section-label{font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;margin-top:10px;}
+/* JOURNAL ENTRIES */
+.journal-entry{background:var(--surface2);border-radius:10px;padding:10px 12px;margin-bottom:6px;position:relative;}
+.journal-entry-time{font-family:var(--mono);font-size:10px;color:var(--dim);margin-bottom:4px;}
+.journal-entry-feels{font-size:13px;margin-bottom:3px;}
+.journal-entry-text{font-size:13px;color:var(--muted);line-height:1.5;}
+.journal-del{position:absolute;top:8px;right:10px;font-size:16px;color:var(--dim);cursor:pointer;}
+/* ACTION NOTE DISPLAY */
+.ex-note-display{font-size:11px;color:var(--muted);margin-top:2px;font-style:italic;}
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--accent);color:var(--bg);padding:8px 18px;border-radius:20px;font-size:13px;font-weight:500;z-index:999;opacity:0;transition:opacity .2s;pointer-events:none;}
+.toast.show{opacity:1;}
 .bottom-safe{height:24px;}
 .divider{height:1px;background:var(--border);margin:14px 0;}
 </style>
@@ -259,21 +275,29 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <div class="top-stat-icon">🔥</div>
     <div><div class="top-stat-val" id="ts-cal-val">0 kcal</div><div class="top-stat-lbl">训练消耗</div></div>
   </div>
+  <div class="top-stat" id="ts-protein-gap">
+    <div class="top-stat-icon">🥩</div>
+    <div><div class="top-stat-val" id="ts-protein-val">--g</div><div class="top-stat-lbl" id="ts-protein-lbl">蛋白缺口</div></div>
+  </div>
   <div class="top-stat" id="ts-water">
     <div class="top-stat-icon">💧</div>
-    <div><div class="top-stat-val" id="ts-water-val">0/2000ml</div><div class="top-stat-lbl">饮水</div></div>
+    <div><div class="top-stat-val" id="ts-water-val">0/2L</div><div class="top-stat-lbl">饮水</div></div>
+  </div>
+  <div class="top-stat" id="ts-kcal-diff">
+    <div class="top-stat-icon">⚡</div>
+    <div><div class="top-stat-val" id="ts-diff-val">--</div><div class="top-stat-lbl" id="ts-diff-lbl">热量差</div></div>
   </div>
   <div class="top-stat" id="ts-weight">
     <div class="top-stat-icon">⚖️</div>
-    <div><div class="top-stat-val" id="ts-weight-val">--kg</div><div class="top-stat-lbl">体重</div></div>
+    <div><div class="top-stat-val" id="ts-weight-val">75kg</div><div class="top-stat-lbl">体重</div></div>
   </div>
   <div class="top-stat" id="ts-sleep">
     <div class="top-stat-icon">😴</div>
     <div><div class="top-stat-val" id="ts-sleep-val">--h</div><div class="top-stat-lbl">睡眠</div></div>
   </div>
-  <div class="top-stat" id="ts-kcal-diff">
-    <div class="top-stat-icon">⚡</div>
-    <div><div class="top-stat-val" id="ts-diff-val">--</div><div class="top-stat-lbl" id="ts-diff-lbl">热量差</div></div>
+  <div class="top-stat" id="ts-achievements" style="display:none">
+    <div class="top-stat-icon">🏆</div>
+    <div><div class="top-stat-val" id="ts-ach-val" style="font-size:12px"></div><div class="top-stat-lbl">今日成就</div></div>
   </div>
 </div>
 
@@ -292,7 +316,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <div class="section-header" onclick="toggleSec(this)">
       <div style="display:flex;align-items:center;gap:10px">
         <div class="sdot" style="background:var(--orange)"></div>
-        <div><div class="sname">热身 / 心肺</div><div class="ssub">部位目标 5组</div></div>
+        <div><div class="sname">热身 / 心肺 <span id="sec-badge-cardio" style="font-size:15px;margin-left:4px"></span></div><div class="ssub">部位目标 5组</div></div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <div class="sprog" id="prog-cardio">0组</div><div class="schev">›</div>
@@ -301,27 +325,27 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <div class="exercise-list">
       <div class="ex-item" data-id="jumping_jack" onclick="openModal(this)">
         <div class="ex-circle" id="circ-jumping_jack"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-jumping_jack" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-jumping_jack" style="color:var(--dim)">○</span></div>
-        <div class="ex-info"><div class="ex-name">开合跳 <span class="ex-achievement" id="ach-jumping_jack"></span></div><div class="ex-target" id="acc-jumping_jack">目标 3组×20个</div></div>
+        <div class="ex-info"><div class="ex-name">开合跳 <span class="ex-achievement" id="ach-jumping_jack"></span></div><div class="ex-target" id="acc-jumping_jack">目标 3组×20个</div><div class="ex-note-display" id="note-jumping_jack"></div></div>
         <div class="ex-btn" id="btn-jumping_jack">+记录</div>
       </div>
       <div class="ex-item" data-id="high_knee_clap" onclick="openModal(this)">
         <div class="ex-circle" id="circ-high_knee_clap"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-high_knee_clap" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-high_knee_clap" style="color:var(--dim)">○</span></div>
-        <div class="ex-info"><div class="ex-name">高抬腿跨下击掌 <span class="ex-achievement" id="ach-high_knee_clap"></span></div><div class="ex-target" id="acc-high_knee_clap">目标 3组×20个</div></div>
+        <div class="ex-info"><div class="ex-name">高抬腿跨下击掌 <span class="ex-achievement" id="ach-high_knee_clap"></span></div><div class="ex-target" id="acc-high_knee_clap">目标 3组×20个</div><div class="ex-note-display" id="note-high_knee_clap"></div></div>
         <div class="ex-btn" id="btn-high_knee_clap">+记录</div>
       </div>
       <div class="ex-item" data-id="high_knee_twist" onclick="openModal(this)">
         <div class="ex-circle" id="circ-high_knee_twist"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-high_knee_twist" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-high_knee_twist" style="color:var(--dim)">○</span></div>
-        <div class="ex-info"><div class="ex-name">高抬腿 对侧手肘 <span class="ex-achievement" id="ach-high_knee_twist"></span></div><div class="ex-target" id="acc-high_knee_twist">目标 3组×20个</div></div>
+        <div class="ex-info"><div class="ex-name">高抬腿 对侧手肘 <span class="ex-achievement" id="ach-high_knee_twist"></span></div><div class="ex-target" id="acc-high_knee_twist">目标 3组×20个</div><div class="ex-note-display" id="note-high_knee_twist"></div></div>
         <div class="ex-btn" id="btn-high_knee_twist">+记录</div>
       </div>
       <div class="ex-item" data-id="high_knee_side" onclick="openModal(this)">
         <div class="ex-circle" id="circ-high_knee_side"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-high_knee_side" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-high_knee_side" style="color:var(--dim)">○</span></div>
-        <div class="ex-info"><div class="ex-name">侧面高抬腿 同侧手肘 <span class="ex-achievement" id="ach-high_knee_side"></span></div><div class="ex-target" id="acc-high_knee_side">目标 3组×20个</div></div>
+        <div class="ex-info"><div class="ex-name">侧面高抬腿 同侧手肘 <span class="ex-achievement" id="ach-high_knee_side"></span></div><div class="ex-target" id="acc-high_knee_side">目标 3组×20个</div><div class="ex-note-display" id="note-high_knee_side"></div></div>
         <div class="ex-btn" id="btn-high_knee_side">+记录</div>
       </div>
       <div class="ex-item" data-id="running" onclick="openModal(this)">
         <div class="ex-circle" id="circ-running"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-running" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-running" style="color:var(--dim)">○</span></div>
-        <div class="ex-info"><div class="ex-name">跑步 <span class="ex-achievement" id="ach-running"></span></div><div class="ex-target" id="acc-running">记录时间/距离</div></div>
+        <div class="ex-info"><div class="ex-name">跑步 <span class="ex-achievement" id="ach-running"></span></div><div class="ex-target" id="acc-running">记录时间/距离</div><div class="ex-note-display" id="note-running"></div></div>
         <div class="ex-btn" id="btn-running">+记录</div>
       </div>
     </div>
@@ -332,7 +356,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <div class="section-header" onclick="toggleSec(this)">
       <div style="display:flex;align-items:center;gap:10px">
         <div class="sdot" style="background:var(--blue)"></div>
-        <div><div class="sname">腿部训练</div><div class="ssub">部位目标 5组</div></div>
+        <div><div class="sname">腿部训练 <span id="sec-badge-legs" style="font-size:15px;margin-left:4px"></span></div><div class="ssub">部位目标 5组</div></div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <div class="sprog" id="prog-legs">0组</div><div class="schev">›</div>
@@ -341,17 +365,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <div class="exercise-list">
       <div class="ex-item" data-id="squat" onclick="openModal(this)">
         <div class="ex-circle" id="circ-squat"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-squat" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-squat" style="color:var(--dim)">○</span></div>
-        <div class="ex-info"><div class="ex-name">普通深蹲 <span class="ex-achievement" id="ach-squat"></span></div><div class="ex-target" id="acc-squat">目标 3组×20个</div></div>
+        <div class="ex-info"><div class="ex-name">普通深蹲 <span class="ex-achievement" id="ach-squat"></span></div><div class="ex-target" id="acc-squat">目标 3组×20个</div><div class="ex-note-display" id="note-squat"></div></div>
         <div class="ex-btn" id="btn-squat">+记录</div>
       </div>
       <div class="ex-item" data-id="bulgarian" onclick="openModal(this)">
         <div class="ex-circle" id="circ-bulgarian"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-bulgarian" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-bulgarian" style="color:var(--dim)">○</span></div>
-        <div class="ex-info"><div class="ex-name">保加利亚蹲 <span class="ex-achievement" id="ach-bulgarian"></span></div><div class="ex-target" id="acc-bulgarian">目标 3组×20个</div></div>
+        <div class="ex-info"><div class="ex-name">保加利亚蹲 <span class="ex-achievement" id="ach-bulgarian"></span></div><div class="ex-target" id="acc-bulgarian">目标 3组×20个</div><div class="ex-note-display" id="note-bulgarian"></div></div>
         <div class="ex-btn" id="btn-bulgarian">+记录</div>
       </div>
       <div class="ex-item" data-id="lunge" onclick="openModal(this)">
         <div class="ex-circle" id="circ-lunge"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-lunge" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-lunge" style="color:var(--dim)">○</span></div>
-        <div class="ex-info"><div class="ex-name">弓箭步蹲 <span class="ex-achievement" id="ach-lunge"></span></div><div class="ex-target" id="acc-lunge">目标 3组×20个</div></div>
+        <div class="ex-info"><div class="ex-name">弓箭步蹲 <span class="ex-achievement" id="ach-lunge"></span></div><div class="ex-target" id="acc-lunge">目标 3组×20个</div><div class="ex-note-display" id="note-lunge"></div></div>
         <div class="ex-btn" id="btn-lunge">+记录</div>
       </div>
     </div>
@@ -362,7 +386,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <div class="section-header" onclick="toggleSec(this)">
       <div style="display:flex;align-items:center;gap:10px">
         <div class="sdot" style="background:var(--purple)"></div>
-        <div><div class="sname">上肢训练</div><div class="ssub">部位目标 5组</div></div>
+        <div><div class="sname">上肢训练 <span id="sec-badge-upper" style="font-size:15px;margin-left:4px"></span></div><div class="ssub">部位目标 5组</div></div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <div class="sprog" id="prog-upper">0组</div><div class="schev">›</div>
@@ -371,27 +395,27 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <div class="exercise-list">
       <div class="ex-item" data-id="pushup_incline" onclick="openModal(this)">
         <div class="ex-circle" id="circ-pushup_incline"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-pushup_incline" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-pushup_incline" style="color:var(--dim)">○</span></div>
-        <div class="ex-info"><div class="ex-name">斜面俯卧撑 <span class="ex-achievement" id="ach-pushup_incline"></span></div><div class="ex-target" id="acc-pushup_incline">目标 3组×20个</div></div>
+        <div class="ex-info"><div class="ex-name">斜面俯卧撑 <span class="ex-achievement" id="ach-pushup_incline"></span></div><div class="ex-target" id="acc-pushup_incline">目标 3组×20个</div><div class="ex-note-display" id="note-pushup_incline"></div></div>
         <div class="ex-btn" id="btn-pushup_incline">+记录</div>
       </div>
       <div class="ex-item" data-id="pushup_t" onclick="openModal(this)">
         <div class="ex-circle" id="circ-pushup_t"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-pushup_t" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-pushup_t" style="color:var(--dim)">○</span></div>
-        <div class="ex-info"><div class="ex-name">T字俯卧撑 <span class="ex-achievement" id="ach-pushup_t"></span></div><div class="ex-target" id="acc-pushup_t">目标 3组×10个</div></div>
+        <div class="ex-info"><div class="ex-name">T字俯卧撑 <span class="ex-achievement" id="ach-pushup_t"></span></div><div class="ex-target" id="acc-pushup_t">目标 3组×10个</div><div class="ex-note-display" id="note-pushup_t"></div></div>
         <div class="ex-btn" id="btn-pushup_t">+记录</div>
       </div>
       <div class="ex-item" data-id="pushup_arrow" onclick="openModal(this)">
         <div class="ex-circle" id="circ-pushup_arrow"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-pushup_arrow" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-pushup_arrow" style="color:var(--dim)">○</span></div>
-        <div class="ex-info"><div class="ex-name">箭头俯卧撑 <span class="ex-achievement" id="ach-pushup_arrow"></span></div><div class="ex-target" id="acc-pushup_arrow">目标 3组×5个</div></div>
+        <div class="ex-info"><div class="ex-name">箭头俯卧撑 <span class="ex-achievement" id="ach-pushup_arrow"></span></div><div class="ex-target" id="acc-pushup_arrow">目标 3组×5个</div><div class="ex-note-display" id="note-pushup_arrow"></div></div>
         <div class="ex-btn" id="btn-pushup_arrow">+记录</div>
       </div>
       <div class="ex-item" data-id="pushup_elevated" onclick="openModal(this)">
         <div class="ex-circle" id="circ-pushup_elevated"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-pushup_elevated" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-pushup_elevated" style="color:var(--dim)">○</span></div>
-        <div class="ex-info"><div class="ex-name">脚垫高俯卧撑 <span class="ex-achievement" id="ach-pushup_elevated"></span></div><div class="ex-target" id="acc-pushup_elevated">目标 3组×5个</div></div>
+        <div class="ex-info"><div class="ex-name">脚垫高俯卧撑 <span class="ex-achievement" id="ach-pushup_elevated"></span></div><div class="ex-target" id="acc-pushup_elevated">目标 3组×5个</div><div class="ex-note-display" id="note-pushup_elevated"></div></div>
         <div class="ex-btn" id="btn-pushup_elevated">+记录</div>
       </div>
       <div class="ex-item" data-id="pushup_pike" onclick="openModal(this)">
         <div class="ex-circle" id="circ-pushup_pike"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-pushup_pike" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-pushup_pike" style="color:var(--dim)">○</span></div>
-        <div class="ex-info"><div class="ex-name">Pike俯卧撑 <span class="ex-achievement" id="ach-pushup_pike"></span></div><div class="ex-target" id="acc-pushup_pike">目标 3组×8个</div></div>
+        <div class="ex-info"><div class="ex-name">Pike俯卧撑 <span class="ex-achievement" id="ach-pushup_pike"></span></div><div class="ex-target" id="acc-pushup_pike">目标 3组×8个</div><div class="ex-note-display" id="note-pushup_pike"></div></div>
         <div class="ex-btn" id="btn-pushup_pike">+记录</div>
       </div>
     </div>
@@ -402,7 +426,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <div class="section-header" onclick="toggleSec(this)">
       <div style="display:flex;align-items:center;gap:10px">
         <div class="sdot" style="background:var(--accent)"></div>
-        <div><div class="sname">核心训练</div><div class="ssub">部位目标 5组</div></div>
+        <div><div class="sname">核心训练 <span id="sec-badge-core" style="font-size:15px;margin-left:4px"></span></div><div class="ssub">部位目标 5组</div></div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <div class="sprog" id="prog-core">0组</div><div class="schev">›</div>
@@ -411,32 +435,32 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <div class="exercise-list">
       <div class="ex-item" data-id="plank" onclick="openModal(this)">
         <div class="ex-circle" id="circ-plank"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-plank" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-plank" style="color:var(--dim)">○</span></div>
-        <div class="ex-info"><div class="ex-name">平板支撑 <span class="ex-achievement" id="ach-plank"></span></div><div class="ex-target" id="acc-plank">目标 3组×60秒</div></div>
+        <div class="ex-info"><div class="ex-name">平板支撑 <span class="ex-achievement" id="ach-plank"></span></div><div class="ex-target" id="acc-plank">目标 3组×60秒</div><div class="ex-note-display" id="note-plank"></div></div>
         <div class="ex-btn" id="btn-plank">+记录</div>
       </div>
       <div class="ex-item" data-id="bench_v" onclick="openModal(this)">
         <div class="ex-circle" id="circ-bench_v"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-bench_v" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-bench_v" style="color:var(--dim)">○</span></div>
-        <div class="ex-info"><div class="ex-name">凳子悬空 V字支撑 <span class="ex-achievement" id="ach-bench_v"></span></div><div class="ex-target" id="acc-bench_v">目标 3组×60秒</div></div>
+        <div class="ex-info"><div class="ex-name">凳子悬空 V字支撑 <span class="ex-achievement" id="ach-bench_v"></span></div><div class="ex-target" id="acc-bench_v">目标 3组×60秒</div><div class="ex-note-display" id="note-bench_v"></div></div>
         <div class="ex-btn" id="btn-bench_v">+记录</div>
       </div>
       <div class="ex-item" data-id="bench_scissor" onclick="openModal(this)">
         <div class="ex-circle" id="circ-bench_scissor"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-bench_scissor" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-bench_scissor" style="color:var(--dim)">○</span></div>
-        <div class="ex-info"><div class="ex-name">凳子悬空 剪刀腿 <span class="ex-achievement" id="ach-bench_scissor"></span></div><div class="ex-target" id="acc-bench_scissor">目标 3组×20个</div></div>
+        <div class="ex-info"><div class="ex-name">凳子悬空 剪刀腿 <span class="ex-achievement" id="ach-bench_scissor"></span></div><div class="ex-target" id="acc-bench_scissor">目标 3组×20个</div><div class="ex-note-display" id="note-bench_scissor"></div></div>
         <div class="ex-btn" id="btn-bench_scissor">+记录</div>
       </div>
       <div class="ex-item" data-id="bench_figure8" onclick="openModal(this)">
         <div class="ex-circle" id="circ-bench_figure8"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-bench_figure8" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-bench_figure8" style="color:var(--dim)">○</span></div>
-        <div class="ex-info"><div class="ex-name">凳子悬空 八字绕环 <span class="ex-achievement" id="ach-bench_figure8"></span></div><div class="ex-target" id="acc-bench_figure8">目标 3组×20个</div></div>
+        <div class="ex-info"><div class="ex-name">凳子悬空 八字绕环 <span class="ex-achievement" id="ach-bench_figure8"></span></div><div class="ex-target" id="acc-bench_figure8">目标 3组×20个</div><div class="ex-note-display" id="note-bench_figure8"></div></div>
         <div class="ex-btn" id="btn-bench_figure8">+记录</div>
       </div>
       <div class="ex-item" data-id="bench_russian" onclick="openModal(this)">
         <div class="ex-circle" id="circ-bench_russian"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-bench_russian" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-bench_russian" style="color:var(--dim)">○</span></div>
-        <div class="ex-info"><div class="ex-name">凳子悬空 俄罗斯转体 <span class="ex-achievement" id="ach-bench_russian"></span></div><div class="ex-target" id="acc-bench_russian">目标 3组×20个</div></div>
+        <div class="ex-info"><div class="ex-name">凳子悬空 俄罗斯转体 <span class="ex-achievement" id="ach-bench_russian"></span></div><div class="ex-target" id="acc-bench_russian">目标 3组×20个</div><div class="ex-note-display" id="note-bench_russian"></div></div>
         <div class="ex-btn" id="btn-bench_russian">+记录</div>
       </div>
       <div class="ex-item" data-id="superman" onclick="openModal(this)">
         <div class="ex-circle" id="circ-superman"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2"/><circle id="cp-superman" cx="13" cy="13" r="11" fill="none" stroke="#2e2e2e" stroke-width="2" stroke-dasharray="69.1" stroke-dashoffset="69.1" stroke-linecap="round"/></svg><span class="ex-circle-icon" id="ci-superman" style="color:var(--dim)">○</span></div>
-        <div class="ex-info"><div class="ex-name">背肌两头起 <span class="ex-achievement" id="ach-superman"></span></div><div class="ex-target" id="acc-superman">目标 3组×20个</div></div>
+        <div class="ex-info"><div class="ex-name">背肌两头起 <span class="ex-achievement" id="ach-superman"></span></div><div class="ex-target" id="acc-superman">目标 3组×20个</div><div class="ex-note-display" id="note-superman"></div></div>
         <div class="ex-btn" id="btn-superman">+记录</div>
       </div>
     </div>
@@ -491,14 +515,20 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
       <span class="s-label">今日完成拉伸</span>
     </div>
 
-    <div class="extras-title" style="margin-top:4px">今日状态</div>
-    <div class="energy-row">
-      <div class="energy-btn" onclick="setEnergy(1,this)">😴<br>很累</div>
-      <div class="energy-btn" onclick="setEnergy(2,this)">😐<br>一般</div>
-      <div class="energy-btn" onclick="setEnergy(3,this)">💪<br>不错</div>
-      <div class="energy-btn" onclick="setEnergy(4,this)">🔥<br>极佳</div>
+    <div class="extras-title" style="margin-top:4px">今日日志 <span style="font-size:10px;color:var(--muted)">（可多次添加）</span></div>
+
+    <div class="feel-section-label">整体状态</div>
+    <div class="feel-row" id="energy-quick">
+      <div class="feel-tag" onclick="toggleQuickFeel('energy','😴很累',this)">😴 很累</div>
+      <div class="feel-tag" onclick="toggleQuickFeel('energy','😐一般',this)">😐 一般</div>
+      <div class="feel-tag" onclick="toggleQuickFeel('energy','💪不错',this)">💪 不错</div>
+      <div class="feel-tag" onclick="toggleQuickFeel('energy','🔥极佳',this)">🔥 极佳</div>
     </div>
-    <textarea class="note-input" id="day-note" placeholder="今天感觉怎样...（可选）" oninput="autoSave()"></textarea>
+
+    <textarea class="note-input" id="day-note-input" placeholder="写下今天的感受、想法...（可选）" style="height:60px"></textarea>
+    <button class="save-btn" style="margin-bottom:10px" onclick="addJournalEntry()">+ 添加这条日志</button>
+
+    <div id="journal-list"></div>
     <button class="save-btn" onclick="saveDay()">保存今日记录</button>
   </div>
 
@@ -617,6 +647,20 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
         </div>
       </div>
       <div class="extra-input-box">
+        <div class="extra-input-label">默认体重</div>
+        <div class="extra-input-row">
+          <input class="extra-num-input" id="set-default-weight" type="number" placeholder="75" step="0.1" onchange="saveProfile()">
+          <span class="extra-unit">kg</span>
+        </div>
+      </div>
+      <div class="extra-input-box">
+        <div class="extra-input-label">蛋白质目标</div>
+        <div class="extra-input-row">
+          <input class="extra-num-input" id="set-protein-goal" type="number" placeholder="110" onchange="saveProfile()">
+          <span class="extra-unit">g/天</span>
+        </div>
+      </div>
+      <div class="extra-input-box">
         <div class="extra-input-label">目标饮水量</div>
         <div class="extra-input-row">
           <input class="extra-num-input" id="set-water-goal" type="number" placeholder="2000" onchange="saveProfile()">
@@ -625,8 +669,18 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
       </div>
     </div>
     <div style="font-size:12px;color:var(--muted);line-height:1.7;background:var(--surface2);border-radius:10px;padding:10px 12px">
-      💡 体重每天在「今日打卡」页面记录，BMR和营养需求会自动用最新体重计算
+      💡 体重若当天未填写，自动使用默认体重。BMR和营养需求会自动重新计算。
     </div>
+  </div>
+
+  <!-- 动作目标设置 -->
+  <div class="sum-section">
+    <div class="sum-title">动作目标设置</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.7">设置每个动作的目标组数和次数，长期坚持后可以逐步提高</div>
+    <div style="background:var(--surface2);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--muted);line-height:1.7">
+      💡 每个动作独立设置组数和次数，默认均为3组，调整后即时保存
+    </div>
+    <div id="ex-target-list"></div>
   </div>
 
   <!-- 添加到桌面 -->
@@ -745,7 +799,29 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
         <div><input class="run-input" id="run-km" type="number" placeholder="0.0" min="0" step="0.1"><div style="font-size:11px;color:var(--muted);text-align:center;margin-top:3px">公里</div></div>
       </div>
     </div>
-    <textarea class="modal-note" id="modal-note" placeholder="备注（可选）"></textarea>
+    <div class="feel-section-label">完成度</div>
+    <div class="feel-row" id="modal-completion">
+      <div class="feel-tag" onclick="selectFeelTag('completion','😌轻松',this,'modal-completion')">😌 轻松</div>
+      <div class="feel-tag" onclick="selectFeelTag('completion','💪适量',this,'modal-completion')">💪 适量</div>
+      <div class="feel-tag" onclick="selectFeelTag('completion','😤努力',this,'modal-completion')">😤 努力</div>
+      <div class="feel-tag" onclick="selectFeelTag('completion','🔥超额',this,'modal-completion')">🔥 超额</div>
+    </div>
+    <div class="feel-section-label">肌肉感受</div>
+    <div class="feel-row" id="modal-muscle">
+      <div class="feel-tag" onclick="selectFeelTag('muscle','😶无感',this,'modal-muscle')">😶 无感</div>
+      <div class="feel-tag" onclick="selectFeelTag('muscle','😊微酸',this,'modal-muscle')">😊 微酸</div>
+      <div class="feel-tag" onclick="selectFeelTag('muscle','😣酸胀',this,'modal-muscle')">😣 酸胀</div>
+      <div class="feel-tag" onclick="selectFeelTag('muscle','😖酸痛',this,'modal-muscle')">😖 酸痛</div>
+    </div>
+    <div class="feel-section-label">其他感受（可多选）</div>
+    <div class="feel-row" id="modal-other">
+      <div class="feel-tag" onclick="toggleFeelTag(this,'modal-other-vals')">😓 比较累</div>
+      <div class="feel-tag" onclick="toggleFeelTag(this,'modal-other-vals')">🤔 不熟练</div>
+      <div class="feel-tag" onclick="toggleFeelTag(this,'modal-other-vals')">⚡ 状态好</div>
+      <div class="feel-tag" onclick="toggleFeelTag(this,'modal-other-vals')">🤩 超常发挥</div>
+    </div>
+    <input type="hidden" id="modal-other-vals" value="">
+    <textarea class="modal-note" id="modal-note" placeholder="文字备注（可选）"></textarea>
     <button class="mconfirm" onclick="confirmLog()">确认 ✓ 累加记录</button>
   </div>
 </div>
@@ -788,11 +864,31 @@ const EX = {
 };
 
 // ═══════════════════════════════
+// EXERCISE GOAL HELPERS
+// ═══════════════════════════════
+function getExGoalSets(id) {
+  const profile = loadProfile();
+  const custom = profile.customTargets && profile.customTargets[id];
+  return (custom && custom.sets) || EX[id].goalSets || profile.defaultSets || 3;
+}
+function getExGoalReps(id) {
+  const profile = loadProfile();
+  const custom = profile.customTargets && profile.customTargets[id];
+  return (custom && custom.reps) || EX[id].goalReps;
+}
+function saveCustomTarget(id, sets, reps) {
+  const profile = loadProfile();
+  profile.customTargets = profile.customTargets || {};
+  profile.customTargets[id] = { sets, reps };
+  saveProfileStore(profile);
+}
+
+// ═══════════════════════════════
 // STORAGE
 // ═══════════════════════════════
 const load = () => JSON.parse(localStorage.getItem('ft_log') || '{}');
 const save = d => localStorage.setItem('ft_log', JSON.stringify(d));
-const loadProfile = () => JSON.parse(localStorage.getItem('ft_profile') || '{"height":184,"waterGoal":2000}');
+const loadProfile = () => JSON.parse(localStorage.getItem('ft_profile') || '{"height":184,"waterGoal":2000,"defaultWeight":75,"proteinGoal":110,"defaultSets":3}');
 const saveProfileStore = p => localStorage.setItem('ft_profile', JSON.stringify(p));
 const today = () => localDate(new Date());
 const localDate = (d) => {
@@ -804,6 +900,7 @@ const localDate = (d) => {
 let curId = null, curSets = 2;
 let todayLog = {}, waterMl = 0, stretchDone = false, energyLevel = 0;
 let todayMeals = [], curMealType = '';
+let todayJournals = [], curQuickEnergy = '';
 
 // ═══════════════════════════════
 // CALORIE BURN ESTIMATE
@@ -839,20 +936,57 @@ function calcBMR(weightKg, heightCm) {
 // ═══════════════════════════════
 function getAchievement(id, log) {
   const ex = EX[id]; if (!ex || !log) return { status: 'none', label: '' };
-  const goalTotal = ex.goalSets * ex.goalReps;
+  const goalSets = getExGoalSets(id);
+  const goalReps = getExGoalReps(id);
+  const goalTotal = goalSets * goalReps;
   let actual = 0;
   if (ex.type === 'reps') actual = log.totalReps || 0;
   else if (ex.type === 'hold') actual = log.totalSecs || 0;
   else actual = log.totalSets > 0 ? goalTotal : 0;
-  const extraSets = Math.max(0, (log.totalSets || 0) - ex.goalSets);
   if (actual === 0) return { status: 'none', label: '' };
-  if (actual >= goalTotal) {
-    if (extraSets >= 3) return { status: 'over', label: '🏆' };
-    if (extraSets >= 1) return { status: 'over', label: '⭐' };
-    return { status: 'done', label: '✓' };
+  if (actual < goalTotal) {
+    return { status: (log.totalSets||0) >= 2 ? 'started2' : 'started1', label: '' };
   }
-  if ((log.totalSets || 0) >= 2) return { status: 'started2', label: '' };
-  return { status: 'started1', label: '' };
+  // Calculate extra units (sets or equivalent reps groups)
+  const extraUnits = Math.floor((actual - goalTotal) / Math.max(1, goalReps));
+  const label = buildAchLabel(extraUnits, '⭐', '🏆', 3);
+  return { status: extraUnits > 0 ? 'over' : 'done', label };
+}
+
+function buildAchLabel(extra, small, big, threshold) {
+  if (extra <= 0) return '';
+  let trophies = Math.floor(extra / threshold);
+  let stars = extra % threshold;
+  return big.repeat(trophies) + small.repeat(stars);
+}
+
+function getSectionAchievement(section) {
+  let tot = 0;
+  Object.values(todayLog).forEach(e => { if (e.section === section) tot += e.totalSets || 0; });
+  const target = 5;
+  if (tot < target) return { met: false, label: '' };
+  const extra = tot - target;
+  const label = buildAchLabel(extra, '🏅', '🎖️', 5);
+  return { met: true, label };
+}
+
+function getTodayAchievements() {
+  let stars = 0, trophies = 0, medals = 0, badges = 0;
+  Object.entries(todayLog).forEach(([id, log]) => {
+    const ach = getAchievement(id, log);
+    if (ach.label) {
+      trophies += (ach.label.match(/🏆/g)||[]).length;
+      stars += (ach.label.match(/⭐/g)||[]).length;
+    }
+  });
+  ['cardio','legs','upper','core'].forEach(s => {
+    const sa = getSectionAchievement(s);
+    if (sa.met) {
+      badges += (sa.label.match(/🎖️/g)||[]).length;
+      medals += (sa.label.match(/🏅/g)||[]).length;
+    }
+  });
+  return { stars, trophies, medals, badges };
 }
 
 // ═══════════════════════════════
@@ -917,6 +1051,16 @@ function refreshItem(id) {
     if (btn) btn.textContent = log.totalSets + '组×' + Math.round(log.totalReps / Math.max(1, log.totalSets)) + '个';
     if (acc) acc.textContent = '累计: ' + log.totalSets + '组 / ' + log.totalReps + '个';
   }
+  // Show feeling tags below exercise name
+  const noteEl = document.getElementById('note-' + id);
+  if (noteEl) {
+    const parts = [];
+    if (log.feelCompletion) parts.push(log.feelCompletion);
+    if (log.feelMuscle) parts.push(log.feelMuscle);
+    if (log.feelOther) parts.push(log.feelOther);
+    if (log.lastNote) parts.push(log.lastNote);
+    noteEl.textContent = parts.join(' · ');
+  }
 }
 
 // ═══════════════════════════════
@@ -924,8 +1068,9 @@ function refreshItem(id) {
 // ═══════════════════════════════
 function updateAllProg() {
   const profile = loadProfile();
-  const weightKg = parseFloat(document.getElementById('input-weight')?.value) || 75;
+  const weightKg = parseFloat(document.getElementById('input-weight')?.value) || profile.defaultWeight || 75;
   const burnKcal = calcBurnKcal(todayLog, weightKg);
+  const proteinGoal = profile.proteinGoal || 110;
 
   ['cardio', 'legs', 'upper', 'core'].forEach(s => {
     let tot = 0;
@@ -933,16 +1078,51 @@ function updateAllProg() {
     const el = document.getElementById('prog-' + s);
     if (!el) return;
     el.textContent = tot + '组';
-    el.className = 'sprog' + (tot === 0 ? '' : tot < 3 ? ' p1' : tot < 5 ? ' p2' : tot >= 6 ? ' over' : ' done');
+    el.className = 'sprog' + (tot === 0 ? '' : tot < 3 ? ' p1' : tot < 5 ? ' p2' : tot >= 5 ? ' done' : '');
+    // Section achievement badge
+    const sa = getSectionAchievement(s);
+    const badgeEl = document.getElementById('sec-badge-' + s);
+    if (badgeEl) badgeEl.textContent = sa.met ? (sa.label || '✅') : '';
   });
+  // Today's achievement summary in top bar
+  const ta = getTodayAchievements();
+  const achParts = [];
+  if (ta.trophies) achParts.push('🏆×' + ta.trophies);
+  if (ta.stars) achParts.push('⭐×' + ta.stars);
+  if (ta.badges) achParts.push('🎖️×' + ta.badges);
+  if (ta.medals) achParts.push('🏅×' + ta.medals);
+  const achEl = document.getElementById('ts-achievements');
+  if (achEl) {
+    achEl.style.display = achParts.length ? '' : 'none';
+    const valEl = document.getElementById('ts-ach-val');
+    if (valEl) valEl.textContent = achParts.join('  ');
+  }
 
-  // top bar
+  // top bar - water in L
   const wGoal = profile.waterGoal || 2000;
+  const wL = (waterMl / 1000).toFixed(2).replace(/\.?0+$/, '');
+  const wGoalL = (wGoal / 1000).toFixed(1).replace(/\.?0+$/, '');
   document.getElementById('ts-cal-val').textContent = burnKcal + ' kcal';
-  document.getElementById('ts-water-val').textContent = waterMl + '/' + wGoal + 'ml';
-  document.getElementById('ts-weight-val').textContent = (document.getElementById('input-weight')?.value || '--') + 'kg';
+  document.getElementById('ts-water-val').textContent = wL + '/' + wGoalL + 'L';
+  document.getElementById('ts-weight-val').textContent = weightKg + 'kg';
   document.getElementById('ts-sleep-val').textContent = (document.getElementById('input-sleep')?.value || '--') + 'h';
 
+  // protein gap
+  const proteinIn = calcMealTotals().protein || 0;
+  const proteinEl = document.getElementById('ts-protein-val');
+  const proteinLbl = document.getElementById('ts-protein-lbl');
+  if (proteinIn > 0) {
+    const gap = proteinIn - proteinGoal;
+    proteinEl.textContent = (gap >= 0 ? '+' : '') + gap + 'g';
+    proteinEl.style.color = gap >= 0 ? 'var(--accent)' : 'var(--orange)';
+    if (proteinLbl) proteinLbl.textContent = gap >= 0 ? '蛋白达标' : '蛋白缺口';
+  } else {
+    proteinEl.textContent = '--g';
+    proteinEl.style.color = 'var(--muted)';
+    if (proteinLbl) proteinLbl.textContent = '蛋白缺口';
+  }
+
+  // kcal diff
   const kcalIn = calcMealTotals().kcal || 0;
   const bmr = calcBMR(weightKg, profile.height || 184);
   const tdee = bmr + 350 + burnKcal;
@@ -1003,15 +1183,26 @@ function initToday() {
     waterMl = data[t].water || 0;
     stretchDone = data[t].stretch || false;
     energyLevel = data[t].energy || 0;
-    document.getElementById('day-note').value = data[t].note || '';
-    document.getElementById('input-weight').value = data[t].weight || '';
-    document.getElementById('input-sleep').value = data[t].sleep || '';
     todayMeals = data[t].meals || [];
+    todayJournals = data[t].journals || [];
     renderMealList();
+    renderJournalList();
     if (stretchDone) document.getElementById('stretch-toggle').classList.add('on');
-    if (energyLevel) document.querySelectorAll('.energy-btn')[energyLevel - 1].classList.add('selected');
     Object.keys(todayLog).forEach(refreshItem);
+  } else {
+    todayJournals = [];
   }
+  // auto-fill weight from profile default or last recorded
+  const profile2 = loadProfile();
+  const lastWeight = (() => {
+    const days = Object.keys(data).sort().reverse();
+    for (const d of days) { if (data[d] && data[d].weight) return data[d].weight; }
+    return profile2.defaultWeight || 75;
+  })();
+  if (!document.getElementById('input-weight').value) {
+    document.getElementById('input-weight').value = lastWeight;
+  }
+  document.getElementById('input-sleep').value = data[t] ? (data[t].sleep || '') : '';
   if (profile.height) document.getElementById('set-height').value = profile.height;
   if (profile.waterGoal) document.getElementById('set-water-goal').value = profile.waterGoal;
   updateWaterDisplay();
@@ -1026,9 +1217,11 @@ function updateWaterDisplay() {
   const profile = loadProfile();
   const goal = profile.waterGoal || 2000;
   const pct = Math.min(100, (waterMl / goal) * 100);
+  const wL2 = (waterMl/1000).toFixed(2).replace(/\.?0+$/,'');
+  const wGoalL2 = (goal/1000).toFixed(1).replace(/\.?0+$/,'');
   document.getElementById('water-display').textContent = waterMl + ' / ' + goal + ' ml';
   document.getElementById('water-fill').style.width = pct + '%';
-  document.getElementById('ts-water-val').textContent = waterMl + '/' + goal + 'ml';
+  document.getElementById('ts-water-val').textContent = wL2 + '/' + wGoalL2 + 'L';
   const ts = document.getElementById('ts-water');
   ts.className = 'top-stat ' + (pct >= 100 ? 'good' : pct >= 50 ? '' : 'warn');
 }
@@ -1050,6 +1243,10 @@ function openModal(item) {
   document.getElementById('modal-title').textContent = ex.name;
   document.getElementById('modal-target').textContent = '目标 ' + ex.goalSets + '组×' + ex.goalReps + (ex.type === 'hold' ? '秒' : '个');
   document.getElementById('modal-note').value = '';
+  // Reset feeling tags
+  document.querySelectorAll('#modal-completion .feel-tag, #modal-muscle .feel-tag, #modal-other .feel-tag').forEach(b => b.classList.remove('selected'));
+  const ov = document.getElementById('modal-other-vals');
+  if (ov) ov.value = '';
   const log = todayLog[curId];
   const accEl = document.getElementById('modal-acc');
   if (log) {
@@ -1089,6 +1286,13 @@ function confirmLog() {
     existing.totalKm = parseFloat(((existing.totalKm || 0) + k).toFixed(2));
   }
   existing.lastNote = document.getElementById('modal-note').value;
+  // Save feeling tags
+  const completion = document.querySelector('#modal-completion .feel-tag.selected');
+  const muscle = document.querySelector('#modal-muscle .feel-tag.selected');
+  const otherVals = document.getElementById('modal-other-vals')?.value || '';
+  existing.feelCompletion = completion ? completion.textContent.trim() : '';
+  existing.feelMuscle = muscle ? muscle.textContent.trim() : '';
+  existing.feelOther = otherVals;
   todayLog[curId] = existing;
   refreshItem(curId);
   updateAllProg();
@@ -1106,7 +1310,7 @@ function autoSave() {
   data[t].water = waterMl;
   data[t].stretch = stretchDone;
   data[t].energy = energyLevel;
-  data[t].note = document.getElementById('day-note').value;
+  data[t].journals = todayJournals;
   data[t].weight = parseFloat(document.getElementById('input-weight').value) || null;
   data[t].sleep = parseFloat(document.getElementById('input-sleep').value) || null;
   data[t].meals = todayMeals;
@@ -1121,10 +1325,14 @@ function autoSave() {
 function saveDay() { autoSave(); alert('已保存！'); }
 
 function saveProfile() {
+  const existing = loadProfile();
   const h = parseFloat(document.getElementById('set-height').value) || 184;
   const wg = parseFloat(document.getElementById('set-water-goal').value) || 2000;
-  saveProfileStore({ height: h, waterGoal: wg });
+  const dw = parseFloat(document.getElementById('set-default-weight').value) || 75;
+  const pg = parseFloat(document.getElementById('set-protein-goal').value) || 110;
+  saveProfileStore({ ...existing, height: h, waterGoal: wg, defaultWeight: dw, proteinGoal: pg });
   updateWaterDisplay();
+  updateAllProg();
 }
 
 // ═══════════════════════════════
@@ -1137,7 +1345,7 @@ function switchTab(tab, btn) {
   document.getElementById('page-' + tab).classList.add('active');
   if (tab === 'summary') renderSummary();
   if (tab === 'history') renderHistory();
-  if (tab === 'settings') renderSettings();
+  if (tab === 'settings') { renderSettings(); renderExTargetList(); }
 }
 
 // ═══════════════════════════════
@@ -1207,7 +1415,7 @@ function renderSummary() {
   const latestWeight = (() => { const d = Object.keys(data).sort().reverse().find(k => data[k].weight); return d ? data[d].weight : 75; })();
   const bmr = calcBMR(latestWeight, profile.height || 184);
   const tdee = bmr + 350;
-  const proteinGoal = Math.round(latestWeight * 1.8);
+  const proteinGoal = profile.proteinGoal || Math.round(latestWeight * 1.8);
   const proteinGap = proteinDays ? Math.max(0, proteinGoal - avgProtein) : null;
   const kcalGap = kcalDays ? avgKcal - tdee : null;
   document.getElementById('nutrition-analysis').innerHTML = `
@@ -1433,15 +1641,30 @@ function openDetail(d) {
       else if (e.type === 'run') detail = (e.totalMin || 0) + '分钟 / ' + (e.totalKm || 0) + 'km';
       else detail = e.totalSets + '组 / ' + e.totalReps + '个';
       const statusColor = ach.status === 'done' || ach.status === 'over' ? 'var(--accent)' : 'var(--orange)';
-      html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
-        <span style="font-size:13px">${EX[id] ? EX[id].name : id} ${ach.label}</span>
-        <span style="font-family:var(--mono);font-size:12px;color:${statusColor}">${detail}</span>
+      const feelParts = [e.feelCompletion, e.feelMuscle, e.feelOther].filter(Boolean).join(' ');
+      html += `<div style="padding:8px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px">${EX[id] ? EX[id].name : id} ${ach.label}</span>
+          <span style="font-family:var(--mono);font-size:12px;color:${statusColor}">${detail}</span>
+        </div>
+        ${feelParts ? '<div style="font-size:11px;color:var(--muted);margin-top:3px">' + feelParts + '</div>' : ''}
+        ${e.lastNote ? '<div style="font-size:11px;color:var(--dim);margin-top:2px;font-style:italic">' + e.lastNote + '</div>' : ''}
       </div>`;
     });
     html += '</div>';
   });
 
   if (log.stretch) html += `<div style="background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--accent);margin-bottom:10px">✓ 完成了拉伸</div>`;
+  if (log.journals && log.journals.length) {
+    html += `<div class="sum-section" style="margin-bottom:10px"><div class="sum-title">今日日志</div>`;
+    log.journals.forEach(j => {
+      html += `<div style="padding:8px 0;border-bottom:1px solid var(--border)">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-bottom:3px">${j.time || ''} ${j.energy || ''}</div>
+        ${j.note ? '<div style="font-size:13px;color:var(--muted)">' + j.note + '</div>' : ''}
+      </div>`;
+    });
+    html += '</div>';
+  }
   if (log.note) html += `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--muted);margin-bottom:10px;font-style:italic">"${log.note}"</div>`;
 
   document.getElementById('hdetail-content').innerHTML = html;
@@ -1457,6 +1680,9 @@ function renderSettings() {
   const profile = loadProfile();
   document.getElementById('set-height').value = profile.height || 184;
   document.getElementById('set-water-goal').value = profile.waterGoal || 2000;
+  document.getElementById('set-default-weight').value = profile.defaultWeight || 75;
+  document.getElementById('set-protein-goal').value = profile.proteinGoal || 110;
+  renderExTargetList();
   const data = load();
   const days = Object.keys(data).filter(k => Object.keys(data[k].exercises || {}).length > 0);
   let totalSets = 0;
@@ -1550,6 +1776,140 @@ function formatKcalDiff(diff) {
 }
 
 // ═══════════════════════════════
+// FEELING TAG FUNCTIONS
+// ═══════════════════════════════
+function selectFeelTag(type, val, btn, rowId) {
+  document.querySelectorAll('#' + rowId + ' .feel-tag').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function toggleFeelTag(btn, hiddenId) {
+  btn.classList.toggle('selected');
+  const selected = Array.from(btn.closest('.feel-row').querySelectorAll('.feel-tag.selected'))
+    .map(b => b.textContent.trim()).join('·');
+  const hidden = document.getElementById(hiddenId);
+  if (hidden) hidden.value = selected;
+}
+
+function toggleQuickFeel(type, val, btn) {
+  const row = document.getElementById('energy-quick');
+  row.querySelectorAll('.feel-tag').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  curQuickEnergy = val;
+}
+
+// ═══════════════════════════════
+// JOURNAL FUNCTIONS
+// ═══════════════════════════════
+function addJournalEntry() {
+  const note = document.getElementById('day-note-input').value.trim();
+  if (!note && !curQuickEnergy) { alert('请填写感受或状态'); return; }
+  const now = new Date();
+  const timeStr = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
+  todayJournals.push({ time: timeStr, energy: curQuickEnergy, note });
+  // reset
+  document.getElementById('day-note-input').value = '';
+  curQuickEnergy = '';
+  document.querySelectorAll('#energy-quick .feel-tag').forEach(b => b.classList.remove('selected'));
+  renderJournalList();
+  autoSave();
+}
+
+function deleteJournal(i) {
+  todayJournals.splice(i, 1);
+  renderJournalList();
+  autoSave();
+}
+
+function renderJournalList() {
+  const el = document.getElementById('journal-list');
+  if (!el) return;
+  if (!todayJournals.length) { el.innerHTML = ''; return; }
+  el.innerHTML = todayJournals.map((j, i) => `
+    <div class="journal-entry">
+      <div class="journal-entry-time">${j.time || ''}</div>
+      <div class="journal-entry-feels">${j.energy || ''}</div>
+      ${j.note ? '<div class="journal-entry-text">' + j.note + '</div>' : ''}
+      <div class="journal-del" onclick="deleteJournal(${i})">×</div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════
+// SETTINGS - Exercise targets
+// ═══════════════════════════════
+function setDefaultSets(n, btn) {
+  document.querySelectorAll('#ex-target-list .set-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const profile = loadProfile();
+  profile.defaultSets = n;
+  saveProfileStore(profile);
+}
+
+function renderExTargetList() {
+  const profile = loadProfile();
+  const cont = document.getElementById('ex-target-list');
+  if (!cont) return;
+  cont.innerHTML = Object.entries(EX).map(([id, ex]) => {
+    const goalReps = getExGoalReps(id);
+    const goalSets = getExGoalSets(id);
+    const unit = ex.type === 'hold' ? '秒' : '个';
+    return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:13px;font-weight:500;margin-bottom:8px">${ex.name}</div>
+      <div style="display:flex;gap:12px;align-items:center">
+        <div style="flex:1">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:1px">组数</div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="num-btn" style="width:26px;height:26px;font-size:14px" onclick="adjExSets('${id}',-1)">−</div>
+            <span style="font-family:var(--mono);font-size:15px;color:var(--accent);min-width:28px;text-align:center" id="es-${id}">${goalSets}组</span>
+            <div class="num-btn" style="width:26px;height:26px;font-size:14px" onclick="adjExSets('${id}',1)">+</div>
+          </div>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:1px">${ex.type==='hold'?'秒数':'次数'}</div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="num-btn" style="width:26px;height:26px;font-size:14px" onclick="adjExReps('${id}',-1)">−</div>
+            <span style="font-family:var(--mono);font-size:15px;color:var(--accent);min-width:40px;text-align:center" id="et-${id}">${goalReps}${unit}</span>
+            <div class="num-btn" style="width:26px;height:26px;font-size:14px" onclick="adjExReps('${id}',1)">+</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function adjExSets(id, delta) {
+  const current = getExGoalSets(id);
+  const newVal = Math.max(1, Math.min(10, current + delta));
+  const profile = loadProfile();
+  profile.customTargets = profile.customTargets || {};
+  profile.customTargets[id] = profile.customTargets[id] || {};
+  profile.customTargets[id].sets = newVal;
+  profile.customTargets[id].reps = profile.customTargets[id].reps || getExGoalReps(id);
+  saveProfileStore(profile);
+  const el = document.getElementById('es-' + id);
+  if (el) el.textContent = newVal + '组';
+  showToast('已保存 ✓');
+}
+
+function adjExReps(id, delta) {
+  const ex = EX[id];
+  const current = getExGoalReps(id);
+  const step = ex.type === 'hold' ? 5 : 1;
+  const min = ex.type === 'hold' ? 5 : 1;
+  const newVal = Math.max(min, current + delta * step);
+  const profile = loadProfile();
+  profile.customTargets = profile.customTargets || {};
+  profile.customTargets[id] = profile.customTargets[id] || {};
+  profile.customTargets[id].reps = newVal;
+  profile.customTargets[id].sets = profile.customTargets[id].sets || getExGoalSets(id);
+  saveProfileStore(profile);
+  const el = document.getElementById('et-' + id);
+  const unit = ex.type === 'hold' ? '秒' : '个';
+  if (el) el.textContent = newVal + unit;
+  showToast('已保存 ✓');
+}
+
+// ═══════════════════════════════
 // MEAL FUNCTIONS
 // ═══════════════════════════════
 function calcMealTotals() {
@@ -1628,6 +1988,15 @@ function confirmMeal() {
 // ═══════════════════════════════
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+function showToast(msg) {
+  let t = document.getElementById('global-toast');
+  if (!t) { t = document.createElement('div'); t.id = 'global-toast'; t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 1500);
 }
 
 // ═══════════════════════════════
