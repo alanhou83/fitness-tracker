@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #111; font-family: 'DM Mono', monospace; padding: 20px; }
+
+  .header {
+    padding: 16px 16px 0;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
+  }
+  .header-left { flex: 1; min-width: 0; }
+  .hdate { font-size: 11px; color: #666; letter-spacing: 2px; }
+  .htitle-row { display: flex; align-items: baseline; gap: 8px; margin-top: 2px; }
+  .htitle { font-size: 20px; font-weight: 700; color: #fff; white-space: nowrap; }
+  .ach-inline { font-size: 12px; color: #888; letter-spacing: 1px; white-space: nowrap; }
+
+  .streak-badge {
+    display: flex; flex-direction: column; align-items: center;
+    background: #2a2a1a; border: 1px solid #4a4a20;
+    border-radius: 10px; padding: 6px 10px; min-width: 54px; flex-shrink: 0;
+  }
+  .streak-badge .num { font-size: 20px; font-weight: 500; color: #c8f060; line-height: 1; }
+  .streak-badge .lbl { font-size: 9px; color: #c8f060; margin-top: 2px; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="hdate">2026年5月30日 周六</div>
+    <div class="htitle-row">
+      <span class="htitle">训练记录</span>
+      <span class="ach-inline">🏆×1 🥈×1</span>
+    </div>
+  </div>
+  <div style="flex-shrink:0">
+    <div class="streak-badge">
+      <div class="num">5</div>
+      <div class="lbl">连续天</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
