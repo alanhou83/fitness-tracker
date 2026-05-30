@@ -700,7 +700,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 
   <!-- 导出 -->
   <div class="sum-section">
-    <div class="sum-title">导出数据</div>
+    <div class="sum-title">导出数据备份</div>
     <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.7">建议每1-2周备份一次，存入iCloud保证数据安全</div>
     <div style="margin-bottom:10px">
       <div style="font-size:13px;font-weight:500;margin-bottom:4px">导出 JSON 备份</div>
@@ -713,6 +713,24 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
       <div style="font-size:12px;color:var(--muted);margin-bottom:8px">可用 Excel / Numbers 打开分析</div>
       <button class="exp-btn" onclick="exportCSV()">导出 CSV 数据表格</button>
     </div>
+  </div>
+
+  <!-- AI 分析导出 -->
+  <div class="sum-section">
+    <div class="sum-title">AI 分析导出</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.7">生成结构化数据，可直接发给 AI 进行健身分析评估</div>
+    <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+      <button class="exp-btn" style="flex:1;min-width:60px" onclick="setAIRange(7)">近7天</button>
+      <button class="exp-btn" style="flex:1;min-width:60px" onclick="setAIRange(30)">近30天</button>
+      <button class="exp-btn" style="flex:1;min-width:60px" onclick="setAIRange(90)">近90天</button>
+      <button class="exp-btn" style="flex:1;min-width:60px" onclick="setAIRange(0)">全部</button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+      <input type="date" id="ai-from" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 8px;color:var(--text);font-family:var(--mono);font-size:12px">
+      <span style="color:var(--muted);font-size:12px;flex-shrink:0">至</span>
+      <input type="date" id="ai-to" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 8px;color:var(--text);font-family:var(--mono);font-size:12px">
+    </div>
+    <button class="exp-btn" onclick="exportAIData()">导出 AI 分析数据</button>
   </div>
 
   <!-- 导入 -->
@@ -1703,6 +1721,164 @@ function renderSettings() {
 // ═══════════════════════════════
 // EXPORT / IMPORT
 // ═══════════════════════════════
+function setAIRange(days) {
+  const toDate = new Date();
+  document.getElementById('ai-to').value = localDate(toDate);
+  if (days === 0) {
+    const keys = Object.keys(load()).sort();
+    document.getElementById('ai-from').value = keys[0] || localDate(toDate);
+  } else {
+    const from = new Date(toDate);
+    from.setDate(from.getDate() - days + 1);
+    document.getElementById('ai-from').value = localDate(from);
+  }
+}
+
+function exportAIData() {
+  const data = load();
+  const profile = loadProfile();
+  const from = document.getElementById('ai-from').value;
+  const to = document.getElementById('ai-to').value;
+  if (!from || !to) { alert('请先选择日期范围'); return; }
+  if (from > to) { alert('开始日期不能晚于结束日期'); return; }
+
+  const secNames = { cardio:'热身/心肺', legs:'腿部训练', upper:'上肢训练', core:'核心训练' };
+  const allDates = Object.keys(data).sort().filter(d => d >= from && d <= to);
+  if (!allDates.length) { alert('所选日期范围内暂无数据'); return; }
+
+  // ── 每日记录 ──
+  const 每日记录 = allDates.map(d => {
+    const log = data[d];
+    const ex = log.exercises || {};
+    const kcalIn = log.kcalIn || (log.meals||[]).reduce((a,m)=>a+(m.kcal||0),0);
+    const protein = log.protein || (log.meals||[]).reduce((a,m)=>a+(m.protein||0),0);
+    const burn = Math.round(calcBurnKcal(ex, log.weight || profile.defaultWeight || 75));
+    const bmr = calcBMR(log.weight || profile.defaultWeight || 75, profile.height || 175);
+
+    const rec = { 日期: d };
+    if (log.weight)  rec.体重kg = log.weight;
+    if (log.sleep)   rec.睡眠h = log.sleep;
+    if (log.energy)  rec.精力等级 = log.energy + '/5';
+    if (log.water)   rec.饮水ml = log.water;
+    if (log.stretch !== undefined) rec.拉伸 = log.stretch ? '是' : '否';
+    if (kcalIn)      rec.热量摄入kcal = kcalIn;
+    if (protein)     rec.蛋白质g = protein;
+    if (burn)        rec.训练消耗kcal = burn;
+    if (kcalIn && burn) rec.热量缺口kcal = Math.round(kcalIn - burn - bmr);
+    if (profile.proteinGoal && protein) rec.蛋白缺口g = Math.round(profile.proteinGoal - protein);
+    if (profile.waterGoal && log.water) rec.饮水达标 = log.water >= profile.waterGoal ? '是' : '否';
+
+    rec.动作 = Object.entries(ex).map(([id, e]) => {
+      const exDef = EX[id] || {};
+      let 完成;
+      if (e.type === 'hold') 完成 = e.totalSets + '组×' + e.totalSecs + '秒';
+      else if (e.type === 'run') 完成 = (e.totalMin||0) + '分钟/' + (e.totalKm||0) + 'km';
+      else 完成 = e.totalSets + '组×' + e.totalReps + '个';
+      const goalSets = getExGoalSets(id), goalReps = getExGoalReps(id);
+      let 目标;
+      if (e.type === 'hold') 目标 = goalSets + '组×' + goalReps + '秒';
+      else if (e.type === 'run') 目标 = '记录时间/距离';
+      else 目标 = goalSets + '组×' + goalReps + '个';
+      const item = { 名称: exDef.name||id, 部位: secNames[exDef.section]||exDef.section||'', 完成, 目标 };
+      if (e.feelCompletion) item.完成度感受 = e.feelCompletion;
+      if (e.feelMuscle)     item.肌肉感受 = e.feelMuscle;
+      if (e.feelOther)      item.其他感受 = e.feelOther;
+      if (e.lastNote)       item.动作备注 = e.lastNote;
+      return item;
+    });
+
+    if (log.meals && log.meals.length) {
+      rec.饮食记录 = log.meals.map(m => {
+        const meal = { 类型: m.type };
+        if (m.kcal)    meal.热量kcal = m.kcal;
+        if (m.protein) meal.蛋白质g = m.protein;
+        if (m.note)    meal.备注 = m.note;
+        return meal;
+      });
+    }
+    if (log.journals && log.journals.length) {
+      rec.日志 = log.journals.map(j => {
+        const entry = { 时间: j.time, 内容: j.note };
+        if (j.energy) entry.精力 = j.energy + '/5';
+        return entry;
+      });
+    }
+    return rec;
+  });
+
+  // ── 统计摘要 ──
+  const exStats = {}, secDays = {};
+  const weights = [], sleeps = [], energies = [], waterRates = [], proteinRates = [];
+
+  allDates.forEach(d => {
+    const log = data[d];
+    const ex = log.exercises || {};
+    if (log.weight) weights.push({ 日期:d, 体重:log.weight });
+    if (log.sleep)  sleeps.push({ 日期:d, 睡眠h:log.sleep });
+    if (log.energy) energies.push({ 日期:d, 精力:log.energy });
+    if (profile.waterGoal && log.water) waterRates.push(log.water / profile.waterGoal);
+    const dayProt = log.protein || (log.meals||[]).reduce((a,m)=>a+(m.protein||0),0);
+    if (profile.proteinGoal && dayProt) proteinRates.push(dayProt / profile.proteinGoal);
+
+    Object.entries(ex).forEach(([id, e]) => {
+      const exDef = EX[id]; if (!exDef) return;
+      if (!exStats[id]) exStats[id] = { 名称:exDef.name, 部位:secNames[exDef.section]||exDef.section, 训练次数:0, 训练记录:[], 动作备注历史:[], 感受历史:[] };
+      const s = exStats[id];
+      s.训练次数++;
+      let 完成;
+      if (e.type==='hold') 完成 = e.totalSets+'组×'+e.totalSecs+'秒';
+      else if (e.type==='run') 完成 = (e.totalMin||0)+'分钟/'+(e.totalKm||0)+'km';
+      else 完成 = e.totalSets+'组×'+e.totalReps+'个';
+      s.训练记录.push({ 日期:d, 完成 });
+      if (e.lastNote) s.动作备注历史.push({ 日期:d, 备注:e.lastNote });
+      const feel = {};
+      if (e.feelCompletion) feel.完成度 = e.feelCompletion;
+      if (e.feelMuscle)     feel.肌肉 = e.feelMuscle;
+      if (e.feelOther)      feel.其他 = e.feelOther;
+      if (Object.keys(feel).length) s.感受历史.push({ 日期:d, ...feel });
+      if (!secDays[exDef.section]) secDays[exDef.section] = new Set();
+      secDays[exDef.section].add(d);
+    });
+  });
+
+  const avg = arr => arr.length ? +(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1) : null;
+
+  const output = {
+    说明: '健身追踪数据，包含训练记录、身体指标、饮食及感受备注，用于AI分析评估',
+    数据范围: from + ' 至 ' + to,
+    导出时间: today(),
+    用户信息: {
+      身高cm: profile.height || null,
+      默认体重kg: profile.defaultWeight || null,
+      蛋白质目标g: profile.proteinGoal || null,
+      饮水目标ml: profile.waterGoal || null,
+    },
+    统计摘要: {
+      记录天数: allDates.length,
+      各动作统计: Object.values(exStats),
+      各部位训练天数: Object.entries(secDays).map(([sec, days]) => ({
+        部位: secNames[sec]||sec, 训练天数: days.size, 占总天数: Math.round(days.size/allDates.length*100)+'%'
+      })),
+      身体指标趋势: {
+        体重变化: weights,
+        睡眠变化: sleeps,
+        精力变化: energies,
+        平均睡眠h: avg(sleeps.map(x=>x.睡眠h)),
+        平均精力: avg(energies.map(x=>x.精力)),
+        饮水达标率: waterRates.length ? Math.round(avg(waterRates)*100)+'%' : null,
+        蛋白达标率: proteinRates.length ? Math.round(avg(proteinRates)*100)+'%' : null,
+      },
+    },
+    每日记录,
+  };
+
+  const blob = new Blob([JSON.stringify(output, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'fitness-ai-' + from + '-' + to + '.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
 function exportJSON() {
   const data = load();
   if (!Object.keys(data).length) { alert('暂无数据'); return; }
