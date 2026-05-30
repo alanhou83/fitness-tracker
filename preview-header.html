@@ -7,127 +7,79 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #111; font-family: 'DM Mono', monospace; padding: 20px; }
-
   .label { color: #666; font-size: 11px; margin-bottom: 12px; letter-spacing: 1px; }
   .divider { border: none; border-top: 1px solid #2a2a2a; margin: 28px 0; }
 
-  /* ===== 现在 ===== */
   .header {
-    background: #1a1a1a;
-    border-radius: 14px;
-    padding: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
+    padding: 16px 16px 0;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
   }
-  .hdate { color: #888; font-size: 12px; }
-  .htitle { color: #fff; font-size: 22px; font-weight: 600; margin-top: 4px; }
+  .header-left { flex: 1; min-width: 0; }
+  .hdate { font-size: 11px; color: #666; letter-spacing: 2px; }
+  .htitle { font-size: 20px; font-weight: 700; margin-top: 2px; color: #fff; }
 
   .streak-badge {
     display: flex; flex-direction: column; align-items: center;
     background: #2a2a1a; border: 1px solid #4a4a20;
-    border-radius: 10px; padding: 6px 10px; min-width: 54px;
+    border-radius: 10px; padding: 6px 10px; min-width: 54px; flex-shrink: 0;
   }
   .streak-badge .num { font-size: 20px; font-weight: 500; color: #c8f060; line-height: 1; }
   .streak-badge .lbl { font-size: 9px; color: #c8f060; margin-top: 2px; letter-spacing: 1px; }
 
-  .topbar {
-    background: #1a1a1a; border-radius: 10px;
-    display: flex; gap: 8px; padding: 10px 14px;
-    overflow-x: auto; margin-bottom: 4px;
-  }
-  .stat-item {
-    display: flex; align-items: center; gap: 8px;
-    background: #222; border-radius: 8px; padding: 8px 12px;
-    white-space: nowrap; flex-shrink: 0;
-  }
-  .stat-val { color: #fff; font-size: 13px; font-weight: 500; }
-  .stat-lbl { color: #666; font-size: 10px; margin-top: 2px; }
-  .stat-icon { font-size: 18px; }
-  .ach-item { border: 1px solid #3a2a10; background: #221a0a; }
-  .ach-item .stat-icon { opacity: 0.4; }
-  .note { color: #555; font-size: 11px; margin-top: 6px; }
-
-  /* ===== 新方案 ===== */
-  .header-new {
-    background: #1a1a1a;
-    border-radius: 14px;
-    padding: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-
-  .badges { display: flex; gap: 8px; align-items: stretch; }
-
-  .badge {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    border-radius: 10px; padding: 6px 10px;
-  }
-  .badge.streak {
-    background: #2a2a1a; border: 1px solid #4a4a20; min-width: 54px;
-  }
-  .badge.streak .num { color: #c8f060; font-size: 20px; font-weight: 500; line-height: 1; }
-  .badge.streak .lbl { color: #c8f060; font-size: 9px; margin-top: 2px; letter-spacing: 1px; }
-
-  .badge.ach {
+  /* 现在：有底框的徽章 */
+  .ach-badge-old {
+    display: flex; flex-direction: column; align-items: center;
     background: #221a0a; border: 1px solid #5a3a10;
-    padding: 6px 12px;
+    border-radius: 10px; padding: 6px 12px; flex-shrink: 0;
   }
-  .badge.ach .ach-icons {
-    font-size: 13px;
-    color: #fff;
-    line-height: 1.3;
+  .ach-badge-old .icons { font-size: 12px; line-height: 1; letter-spacing: 1px; }
+  .ach-badge-old .lbl { font-size: 9px; color: #a07030; margin-top: 3px; letter-spacing: 1px; }
+
+  /* 新方案：纯文字，跟在标题旁边 */
+  .ach-inline {
+    font-size: 12px;
+    color: #888;
+    margin-top: 5px;
     letter-spacing: 1px;
   }
-  .badge.ach .lbl { color: #a07030; font-size: 9px; margin-top: 3px; letter-spacing: 1px; text-align: center; }
 </style>
 </head>
 <body>
 
-<div class="label">▌现在：🏆 图标和内容里的 🏆 重复，且要横滑才能看到</div>
+<div class="label">▌现在：有底框，高度和连续天不一致</div>
 <div class="header">
-  <div>
+  <div class="header-left">
     <div class="hdate">2026年5月30日 周六</div>
     <div class="htitle">训练记录</div>
   </div>
-  <div class="streak-badge">
-    <div class="num">5</div>
-    <div class="lbl">连续天</div>
-  </div>
-</div>
-<div class="topbar">
-  <div class="stat-item"><span class="stat-icon">⚡</span><div><div class="stat-val">-1142 kcal</div><div class="stat-lbl">热量缺口</div></div></div>
-  <div class="stat-item"><span class="stat-icon">⚖️</span><div><div class="stat-val">75kg</div><div class="stat-lbl">体重</div></div></div>
-  <div class="stat-item"><span class="stat-icon">😴</span><div><div class="stat-val">6h</div><div class="stat-lbl">睡眠</div></div></div>
-  <div class="stat-item ach-item">
-    <span class="stat-icon">🏆</span><!-- 这个和内容重复 -->
-    <div><div class="stat-val">🏆×1 🎖️×1</div><div class="stat-lbl">今日成就 ← 要滑到这里</div></div>
-  </div>
-</div>
-
-<hr class="divider">
-
-<div class="label">▌新方案：去掉多余图标，移到右上角</div>
-<div class="header-new">
-  <div>
-    <div class="hdate">2026年5月30日 周六</div>
-    <div class="htitle">训练记录</div>
-  </div>
-  <div class="badges">
-    <div class="badge ach">
-      <div class="ach-icons">🏆×1 🎖️×1</div>
+  <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
+    <div class="ach-badge-old">
+      <div class="icons">🏆×1 🥈×1</div>
       <div class="lbl">今日成就</div>
     </div>
-    <div class="badge streak">
+    <div class="streak-badge">
       <div class="num">5</div>
       <div class="lbl">连续天</div>
     </div>
   </div>
 </div>
-<div class="note">* 无成就时徽章隐藏；内容格式和现在完全一样，只是去掉了外层重复的 🏆 图标</div>
+
+<hr class="divider">
+
+<div class="label">▌新方案：无底框，成就跟在标题下方，右侧只保留连续天</div>
+<div class="header">
+  <div class="header-left">
+    <div class="hdate">2026年5月30日 周六</div>
+    <div class="htitle">训练记录</div>
+    <div class="ach-inline">🏆×1 🥈×1</div>
+  </div>
+  <div style="flex-shrink:0">
+    <div class="streak-badge">
+      <div class="num">5</div>
+      <div class="lbl">连续天</div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
