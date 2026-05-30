@@ -27,6 +27,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .streak-badge{display:flex;flex-direction:column;align-items:center;background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:10px;padding:6px 10px;min-width:54px;}
 .streak-badge .num{font-family:var(--mono);font-size:20px;font-weight:500;color:var(--accent);line-height:1;}
 .streak-badge .lbl{font-size:9px;color:var(--accent);margin-top:2px;letter-spacing:1px;}
+.ach-badge{display:flex;flex-direction:column;align-items:center;background:#221a0a;border:1px solid #5a3a10;border-radius:10px;padding:6px 10px;}
+.ach-badge .icons{font-size:12px;line-height:1;letter-spacing:1px;}
+.ach-badge .lbl{font-size:9px;color:#a07030;margin-top:3px;letter-spacing:1px;}
 
 /* TOP STATS BAR */
 .top-bar{display:flex;gap:8px;padding:12px 16px 0;overflow-x:auto;scrollbar-width:none;}
@@ -261,7 +264,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <div class="hdate" id="header-date"></div>
     <div class="htitle">训练记录</div>
   </div>
-  <div class="header-right">
+  <div class="header-right" style="flex-direction:row;align-items:center;">
+    <div class="ach-badge" id="header-ach-badge" style="display:none">
+      <div class="icons" id="header-ach-icons"></div>
+      <div class="lbl">今日成就</div>
+    </div>
     <div class="streak-badge">
       <div class="num" id="streak-num">0</div>
       <div class="lbl">连续天</div>
@@ -294,10 +301,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
   <div class="top-stat" id="ts-sleep">
     <div class="top-stat-icon">😴</div>
     <div><div class="top-stat-val" id="ts-sleep-val">--h</div><div class="top-stat-lbl">睡眠</div></div>
-  </div>
-  <div class="top-stat" id="ts-achievements" style="display:none">
-    <div class="top-stat-icon">🏆</div>
-    <div><div class="top-stat-val" id="ts-ach-val" style="font-size:12px"></div><div class="top-stat-lbl">今日成就</div></div>
   </div>
 </div>
 
@@ -1084,18 +1087,18 @@ function updateAllProg() {
     const badgeEl = document.getElementById('sec-badge-' + s);
     if (badgeEl) badgeEl.textContent = sa.met ? (sa.label || '✅') : '';
   });
-  // Today's achievement summary in top bar
+  // Today's achievement summary in header badge
   const ta = getTodayAchievements();
   const achParts = [];
   if (ta.trophies) achParts.push('🏆×' + ta.trophies);
   if (ta.stars) achParts.push('⭐×' + ta.stars);
   if (ta.badges) achParts.push('🎖️×' + ta.badges);
   if (ta.medals) achParts.push('🏅×' + ta.medals);
-  const achEl = document.getElementById('ts-achievements');
-  if (achEl) {
-    achEl.style.display = achParts.length ? '' : 'none';
-    const valEl = document.getElementById('ts-ach-val');
-    if (valEl) valEl.textContent = achParts.join('  ');
+  const achBadge = document.getElementById('header-ach-badge');
+  if (achBadge) {
+    achBadge.style.display = achParts.length ? '' : 'none';
+    const iconsEl = document.getElementById('header-ach-icons');
+    if (iconsEl) iconsEl.textContent = achParts.join(' ');
   }
 
   // top bar - water in L
