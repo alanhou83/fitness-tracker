@@ -3,49 +3,53 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #111; font-family: 'DM Mono', monospace; padding: 20px; }
 
   .label { color: #666; font-size: 11px; margin-bottom: 12px; letter-spacing: 1px; }
+  .divider { border: none; border-top: 1px solid #2a2a2a; margin: 28px 0; }
 
-  /* === 现在的样式 === */
-  .header-now {
+  /* ===== 现在 ===== */
+  .header {
     background: #1a1a1a;
     border-radius: 14px;
     padding: 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: 10px;
   }
-  .hdate-now { color: #888; font-size: 12px; }
-  .htitle-now { color: #fff; font-size: 22px; font-weight: 600; margin-top: 4px; }
-  .streak-badge-now {
+  .hdate { color: #888; font-size: 12px; }
+  .htitle { color: #fff; font-size: 22px; font-weight: 600; margin-top: 4px; }
+
+  .streak-badge {
     display: flex; flex-direction: column; align-items: center;
     background: #2a2a1a; border: 1px solid #4a4a20;
     border-radius: 10px; padding: 6px 10px; min-width: 54px;
   }
-  .streak-badge-now .num { font-size: 20px; font-weight: 500; color: #c8f060; line-height: 1; }
-  .streak-badge-now .lbl { font-size: 9px; color: #c8f060; margin-top: 2px; letter-spacing: 1px; }
+  .streak-badge .num { font-size: 20px; font-weight: 500; color: #c8f060; line-height: 1; }
+  .streak-badge .lbl { font-size: 9px; color: #c8f060; margin-top: 2px; letter-spacing: 1px; }
 
-  /* 现在的top-bar成就（藏在最后） */
-  .topbar-now {
+  .topbar {
     background: #1a1a1a; border-radius: 10px;
     display: flex; gap: 8px; padding: 10px 14px;
-    overflow-x: auto; margin-bottom: 32px;
+    overflow-x: auto; margin-bottom: 4px;
   }
   .stat-item {
-    display: flex; align-items: center; gap: 6px;
+    display: flex; align-items: center; gap: 8px;
     background: #222; border-radius: 8px; padding: 8px 12px;
     white-space: nowrap; flex-shrink: 0;
   }
   .stat-val { color: #fff; font-size: 13px; font-weight: 500; }
-  .stat-lbl { color: #666; font-size: 10px; }
-  .stat-ach { opacity: 0.5; font-style: italic; }
-  .arrow { color: #444; align-self: center; font-size: 18px; }
+  .stat-lbl { color: #666; font-size: 10px; margin-top: 2px; }
+  .stat-icon { font-size: 18px; }
+  .ach-item { border: 1px solid #3a2a10; background: #221a0a; }
+  .ach-item .stat-icon { opacity: 0.4; }
+  .note { color: #555; font-size: 11px; margin-top: 6px; }
 
-  /* === 新方案 === */
+  /* ===== 新方案 ===== */
   .header-new {
     background: #1a1a1a;
     border-radius: 14px;
@@ -53,81 +57,69 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
-  .hdate-new { color: #888; font-size: 12px; }
-  .htitle-new { color: #fff; font-size: 22px; font-weight: 600; margin-top: 4px; }
-  .badges {
-    display: flex; gap: 8px; align-items: center;
-  }
+
+  .badges { display: flex; gap: 8px; align-items: stretch; }
+
   .badge {
-    display: flex; flex-direction: column; align-items: center;
-    border-radius: 10px; padding: 6px 10px; min-width: 50px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border-radius: 10px; padding: 6px 10px;
   }
   .badge.streak {
-    background: #2a2a1a; border: 1px solid #4a4a20;
+    background: #2a2a1a; border: 1px solid #4a4a20; min-width: 54px;
   }
-  .badge.streak .num { color: #c8f060; }
-  .badge.streak .lbl { color: #c8f060; }
+  .badge.streak .num { color: #c8f060; font-size: 20px; font-weight: 500; line-height: 1; }
+  .badge.streak .lbl { color: #c8f060; font-size: 9px; margin-top: 2px; letter-spacing: 1px; }
 
   .badge.ach {
-    background: #2a1f0e; border: 1px solid #6a4a10;
+    background: #221a0a; border: 1px solid #5a3a10;
+    padding: 6px 12px;
   }
-  .badge.ach .num { color: #f0a830; }
-  .badge.ach .lbl { color: #f0a830; }
-
-  .badge .num { font-size: 20px; font-weight: 500; line-height: 1; }
-  .badge .lbl { font-size: 9px; margin-top: 2px; letter-spacing: 1px; }
-
-  .note { color: #555; font-size: 11px; margin-top: 6px; margin-bottom: 24px; }
-  .divider { border: none; border-top: 1px solid #2a2a2a; margin: 28px 0; }
+  .badge.ach .ach-icons {
+    font-size: 13px;
+    color: #fff;
+    line-height: 1.3;
+    letter-spacing: 1px;
+  }
+  .badge.ach .lbl { color: #a07030; font-size: 9px; margin-top: 3px; letter-spacing: 1px; text-align: center; }
 </style>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<div class="label">▌现在：成就藏在横向滚动栏最末尾</div>
-<div class="header-now">
+<div class="label">▌现在：🏆 图标和内容里的 🏆 重复，且要横滑才能看到</div>
+<div class="header">
   <div>
-    <div class="hdate-now">2026年5月30日 周六</div>
-    <div class="htitle-now">训练记录</div>
+    <div class="hdate">2026年5月30日 周六</div>
+    <div class="htitle">训练记录</div>
   </div>
-  <div class="streak-badge-now">
+  <div class="streak-badge">
     <div class="num">5</div>
     <div class="lbl">连续天</div>
   </div>
 </div>
-<div class="topbar-now">
-  <div class="stat-item">
-    <span>⚡</span>
-    <div><div class="stat-val">-1142 kcal</div><div class="stat-lbl">热量缺口</div></div>
-  </div>
-  <div class="stat-item">
-    <span>⚖️</span>
-    <div><div class="stat-val">75kg</div><div class="stat-lbl">体重</div></div>
-  </div>
-  <div class="stat-item">
-    <span>😴</span>
-    <div><div class="stat-val">6h</div><div class="stat-lbl">睡眠</div></div>
-  </div>
-  <div class="stat-item stat-ach">
-    <span>🏆</span>
-    <div><div class="stat-val">🏆×1 🎖️×1</div><div class="stat-lbl">今日成就 ← 要划到这里</div></div>
+<div class="topbar">
+  <div class="stat-item"><span class="stat-icon">⚡</span><div><div class="stat-val">-1142 kcal</div><div class="stat-lbl">热量缺口</div></div></div>
+  <div class="stat-item"><span class="stat-icon">⚖️</span><div><div class="stat-val">75kg</div><div class="stat-lbl">体重</div></div></div>
+  <div class="stat-item"><span class="stat-icon">😴</span><div><div class="stat-val">6h</div><div class="stat-lbl">睡眠</div></div></div>
+  <div class="stat-item ach-item">
+    <span class="stat-icon">🏆</span><!-- 这个和内容重复 -->
+    <div><div class="stat-val">🏆×1 🎖️×1</div><div class="stat-lbl">今日成就 ← 要滑到这里</div></div>
   </div>
 </div>
 
 <hr class="divider">
 
-<div class="label">▌新方案：成就徽章移到右上角，纯数字无 emoji</div>
+<div class="label">▌新方案：去掉多余图标，移到右上角</div>
 <div class="header-new">
   <div>
-    <div class="hdate-new">2026年5月30日 周六</div>
-    <div class="htitle-new">训练记录</div>
+    <div class="hdate">2026年5月30日 周六</div>
+    <div class="htitle">训练记录</div>
   </div>
   <div class="badges">
     <div class="badge ach">
-      <div class="num">2</div>
-      <div class="lbl">成就</div>
+      <div class="ach-icons">🏆×1 🎖️×1</div>
+      <div class="lbl">今日成就</div>
     </div>
     <div class="badge streak">
       <div class="num">5</div>
@@ -135,7 +127,7 @@
     </div>
   </div>
 </div>
-<div class="note">* 数字 2 = 今日获得成就总数；0个时徽章隐藏</div>
+<div class="note">* 无成就时徽章隐藏；内容格式和现在完全一样，只是去掉了外层重复的 🏆 图标</div>
 
 </body>
 </html>
