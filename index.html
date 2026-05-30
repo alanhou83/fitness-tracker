@@ -676,12 +676,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 
   <!-- 动作目标设置 -->
   <div class="sum-section">
-    <div class="sum-title">动作目标设置</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.7">设置每个动作的目标组数和次数，长期坚持后可以逐步提高</div>
-    <div style="background:var(--surface2);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--muted);line-height:1.7">
-      💡 每个动作独立设置组数和次数，默认均为3组，调整后即时保存
+    <div class="sum-title" onclick="toggleExTargets()" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+      <span>动作目标设置</span>
+      <span id="ex-target-chevron" style="font-size:12px;color:var(--muted);transition:transform .2s">▼</span>
     </div>
-    <div id="ex-target-list"></div>
+    <div id="ex-target-body" style="display:none">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.7">设置每个动作的目标组数和次数，长期坚持后可以逐步提高</div>
+      <div style="background:var(--surface2);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--muted);line-height:1.7">
+        💡 每个动作独立设置组数和次数，默认均为3组，调整后即时保存
+      </div>
+      <div id="ex-target-list"></div>
+    </div>
   </div>
 
   <!-- 添加到桌面 -->
@@ -1834,6 +1839,16 @@ function renderJournalList() {
 // ═══════════════════════════════
 // SETTINGS - Exercise targets
 // ═══════════════════════════════
+function toggleExTargets() {
+  const body = document.getElementById('ex-target-body');
+  const chevron = document.getElementById('ex-target-chevron');
+  if (!body) return;
+  const open = body.style.display === 'none';
+  body.style.display = open ? '' : 'none';
+  if (chevron) chevron.style.transform = open ? 'rotate(180deg)' : '';
+  if (open) renderExTargetList();
+}
+
 function setDefaultSets(n, btn) {
   document.querySelectorAll('#ex-target-list .set-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
