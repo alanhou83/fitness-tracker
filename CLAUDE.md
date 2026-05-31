@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A standalone Progressive Web App (PWA) fitness tracker built entirely with vanilla HTML, CSS, and JavaScript. No build system, no package manager, no external dependencies.
+A standalone Progressive Web App (PWA) fitness tracker built entirely with vanilla HTML, CSS, and JavaScript. No build system, no package manager, no external dependencies. Deployed via GitHub Pages from the `main` branch at `alanhou83.github.io`.
 
 ## Running Locally
 
@@ -12,34 +12,46 @@ Serve the root directory with any static file server — the app requires a serv
 
 ```bash
 python3 -m http.server 8080
-# or
-npx serve .
-# or
-php -S localhost:8080
 ```
 
-Then open `http://localhost:8080` in a browser.
+No build steps, no `npm install`, no compilation required.
 
-There are no build steps, no `npm install`, and no compilation required.
+## Deployment
+
+- GitHub Pages serves from the `main` branch
+- Development happens on feature branches (e.g. `claude/...`)
+- After committing to the feature branch, copy changed files to `main` and push:
+  ```bash
+  git checkout main
+  git checkout <feature-branch> -- index.html sw.js
+  git commit -m "..." && git push origin main
+  git checkout <feature-branch>
+  ```
+- **Cache busting**: increment the `fitness-vN` version string in `sw.js` whenever changing cached files, to force PWA reload
+
+## Workflow with User
+
+**Always show a preview or describe the plan and wait for confirmation before modifying `index.html`.** The user is non-technical — use plain language, offer HTML preview files for UI changes, and only touch code after explicit approval.
 
 ## Architecture
 
 The entire application lives in two files:
 
-- **`index.html`** (~2000 lines) — all HTML structure, CSS (inline `<style>`), and JavaScript (inline `<script>`)
-- **`sw.js`** — Service Worker implementing network-first caching for offline support (cache version: `fitness-v8`)
+- **`index.html`** (~2200 lines) — all HTML structure, CSS (inline `<style>`), and JavaScript (inline `<script>`)
+- **`sw.js`** — Service Worker implementing network-first caching (current version: `fitness-v9`)
 
 ### JavaScript Module Layout (all inside `index.html`)
 
 | Lines | Responsibility |
 |-------|---------------|
-| ~844–864 | `EX` object — exercise definitions with MET values, section groupings, goal defaults |
-| ~889–898 | `load()` / `save()` / `loadProfile()` / `saveProfileStore()` — localStorage persistence |
-| ~908–961 | Calorie burn (`calcBurnKcal`), BMR (Mifflin-St Jeor), achievement logic |
+| ~850–870 | `EX` object — exercise definitions with MET values, section groupings, goal defaults |
+| ~875–904 | `getExGoalSets/Reps()`, `load()` / `save()` / `loadProfile()` / `saveProfileStore()`, `localDate()` / `today()` |
+| ~914–960 | `calcBurnKcal()`, `calcBMR()` (Mifflin-St Jeor), achievement logic |
 | ~1238–1350 | Modal system, tab switching, feel-tag selection, water intake UI |
 | ~1354–1541 | `renderSummary()`, SVG line charts, heatmap, trend rendering |
 | ~1546–1674 | `renderHistory()`, `openDetail()` day-detail modal |
-| ~1679–1910 | Settings: profile, per-exercise targets, JSON import/export, CSV export |
+| ~1679–1910 | Settings: profile, per-exercise targets (collapsible), JSON import/export, CSV export |
+| ~1706–1830 | `setAIRange()`, `exportAIData()` — AI analysis export with date range filter |
 | ~1915–1985 | Meal logging with calorie/protein tracking |
 
 ### Data Storage (localStorage)
@@ -52,9 +64,10 @@ All persistence uses two keys:
   "YYYY-MM-DD": {
     exercises: {
       [exerciseId]: {
-        type,           // "reps" | "duration" | "distance"
+        type,           // "reps" | "hold" | "run"
         totalSets, totalReps, totalSecs, totalKm, totalMin,
-        feelCompletion, feelMuscle, feelOther, lastNote
+        feelCompletion, feelMuscle, feelOther,
+        lastNote        // per-exercise per-day note (distinct from journals)
       }
     },
     water: 2000,        // ml
@@ -63,7 +76,7 @@ All persistence uses two keys:
     weight: 75.5,       // kg
     sleep: 7.5,         // hours
     meals: [{ type, kcal, protein, note, time }],
-    journals: [{ time, energy, note }],
+    journals: [{ time, energy, note }],  // general daily diary (not exercise-specific)
     kcalIn: 2500,
     protein: 150
   }
@@ -84,25 +97,36 @@ All persistence uses two keys:
 
 ### Exercise Definitions (`EX` object)
 
-Exercises belong to one of four sections: `cardio`, `legs`, `upper`, `core`. Each entry includes:
-- `name` — display name
+Exercises belong to one of four sections: `cardio`, `legs`, `upper`, `core`. Each entry:
+- `name` — display name (Chinese)
 - `section` — section key
-- `type` — `"reps"`, `"duration"`, or `"distance"`
+- `type` — `"reps"`, `"hold"`, or `"run"`
 - `met` — MET value for calorie calculations
-- `goalSets`, `goalReps` (or `goalSecs`) — default targets
+- `goalSets`, `goalReps` — default targets
 
 ### UI Conventions
 
-- **Color scheme**: dark theme; primary accent `#c8f060` (lime green); defined as CSS custom properties on `:root`
-- **Fonts**: `DM Mono` (monospace, primary UI font), `Noto Sans SC` (sans-serif fallback), loaded from Google Fonts
-- **Navigation**: four tabs — Today, Summary, History, Settings
+- **Color scheme**: dark theme; primary accent `#c8f060` (lime green); CSS custom properties on `:root`
+- **Fonts**: `DM Mono` (monospace), `Noto Sans SC` (sans-serif), from Google Fonts
+- **Navigation**: four tabs — 今日打卡, 汇总统计, 历史记录, 设置
+- **Header**: date + title row with achievement icons inline (`<span class="ach-inline">`), streak badge top-right
 - **Modals**: exercise logging and day-detail views use a layered modal pattern
-- **Mobile-first**: designed for iOS/Android PWA installation; touch targets sized accordingly
+- **Mobile-first**: designed for iOS PWA installation
+
+### Settings Page Structure
+
+- 个人信息 — height, weight, protein/water goals
+- 动作目标设置 — collapsible (`toggleExTargets()`), collapsed by default
+- 添加到手机桌面 — PWA install instructions
+- 导出数据备份 — JSON backup + CSV (for data recovery)
+- AI 分析导出 — date-range filtered export (`setAIRange()` / `exportAIData()`) with preset buttons (7/30/90/全部) and custom date inputs; outputs structured Chinese-labeled JSON including per-exercise stats, notes history, feel history, and body metric trends
+- 导入数据 — JSON restore
+- 数据状态
 
 ## Key Conventions
 
-- **No abstraction layers** — the codebase is intentionally flat. DOM manipulation, calculations, and rendering are all done inline without utility wrappers.
-- **Re-render on change** — after any data mutation, call the relevant `render*()` function to refresh the UI rather than doing incremental DOM updates.
-- **Date keys** — always use `localDate()` (not `new Date().toISOString()`) to generate `YYYY-MM-DD` keys; this handles timezone offsets correctly.
-- **Cache busting** — when modifying `sw.js` caching behavior, increment the `fitness-v8` version string to force cache refresh on next load.
-- **SVG charts** — charts are rendered by constructing SVG markup as strings and injecting via `innerHTML`; no charting library is used.
+- **No abstraction layers** — flat codebase; DOM manipulation, calculations, and rendering all done inline
+- **Re-render on change** — after any data mutation, call the relevant `render*()` function
+- **Date keys** — always use `localDate()` (not `new Date().toISOString()`) for `YYYY-MM-DD` keys
+- **SVG charts** — built as string markup injected via `innerHTML`; no charting library
+- **`lastNote` vs `journals`** — `lastNote` is per-exercise per-day; `journals` is the general daily diary array; keep these separate
