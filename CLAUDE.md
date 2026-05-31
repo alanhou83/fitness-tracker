@@ -106,6 +106,12 @@ Exercises belong to one of four sections: `cardio`, `legs`, `upper`, `core`. Eac
 - `met` — MET value for calorie calculations
 - `goalSets`, `goalReps` — default targets
 
+**Adding a new exercise** requires changes in two places:
+1. Add entry to the `EX` object in the JS section
+2. Add the corresponding `<div class="ex-item" data-id="...">` HTML block inside the correct section card in the today's check-in page
+
+Current core exercises include `situp_crunch`（仰卧卷腹，3组×20个）added 2026-05-31.
+
 ### UI Conventions
 
 - **Color scheme**: dark theme; primary accent `#c8f060` (lime green); CSS custom properties on `:root`
@@ -118,7 +124,7 @@ Exercises belong to one of four sections: `cardio`, `legs`, `upper`, `core`. Eac
 ### Settings Page Structure
 
 - 个人信息 — height, weight, protein/water goals
-- 动作目标设置 — collapsible (`toggleExTargets()`), collapsed by default
+- 动作目标设置 — collapsible (`toggleExTargets()`), collapsed by default; rendered by `renderExTargetList()` grouped by section (cardio → legs → upper → core)
 - 添加到手机桌面 — PWA install instructions
 - 导出数据备份 — JSON backup + CSV (for data recovery)
 - AI 分析导出 — date-range filtered export (`setAIRange()` / `exportAIData()`) with preset buttons (7/30/90/全部) and custom date inputs; outputs structured Chinese-labeled JSON including per-exercise stats, notes history, feel history, and body metric trends
@@ -132,3 +138,6 @@ Exercises belong to one of four sections: `cardio`, `legs`, `upper`, `core`. Eac
 - **Date keys** — always use `localDate()` (not `new Date().toISOString()`) for `YYYY-MM-DD` keys
 - **SVG charts** — built as string markup injected via `innerHTML`; no charting library
 - **`lastNote` vs `journals`** — `lastNote` is per-exercise per-day; `journals` is the general daily diary array; keep these separate
+- **`getExGoalSets/Reps(id)`** — must use `custom.sets !== undefined` (not `custom.sets`) to correctly read stored value of `0`; using truthiness check causes 0 to fall back to default
+- **Exercise visibility** — `applyExVisibility()` shows/hides `.ex-item` elements in today's tab based on `getExGoalSets(id) === 0`; also hides the parent `.section-card` if all its exercises are hidden; called on page init, tab switch to 今日打卡, and after `adjExSets()`
+- **Sets = 0 means disabled** — setting goalSets to 0 hides the exercise from today's check-in; displayed in red in settings; `adjExSets` allows min 0 (not 1)
