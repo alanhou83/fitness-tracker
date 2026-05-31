@@ -2040,17 +2040,27 @@ function setDefaultSets(n, btn) {
   saveProfileStore(profile);
 }
 
+function toggleExSection(key) {
+  const body = document.getElementById('exsec-body-' + key);
+  const chev = document.getElementById('exsec-chev-' + key);
+  if (!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : '';
+  if (chev) chev.style.transform = open ? 'rotate(-90deg)' : '';
+}
+
 function renderExTargetList() {
   const cont = document.getElementById('ex-target-list');
   if (!cont) return;
   const sections = [
-    { key: 'cardio', label: '热身 / 心肺' },
-    { key: 'legs',   label: '腿部训练' },
-    { key: 'upper',  label: '上肢训练' },
-    { key: 'core',   label: '核心训练' },
+    { key: 'cardio', label: '热身 / 心肺', color: 'var(--orange)' },
+    { key: 'legs',   label: '腿部训练',    color: 'var(--blue)' },
+    { key: 'upper',  label: '上肢训练',    color: 'var(--purple)' },
+    { key: 'core',   label: '核心训练',    color: 'var(--accent)' },
   ];
-  cont.innerHTML = sections.map(({ key, label }) => {
+  cont.innerHTML = sections.map(({ key, label, color }) => {
     const exEntries = Object.entries(EX).filter(([, ex]) => ex.section === key);
+    const count = exEntries.length;
     const rows = exEntries.map(([id, ex]) => {
       const goalSets = getExGoalSets(id);
       const goalReps = getExGoalReps(id);
@@ -2079,7 +2089,18 @@ function renderExTargetList() {
         </div>
       </div>`;
     }).join('');
-    return `<div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:12px 0 4px;border-bottom:1px solid var(--border)">${label}</div>${rows}`;
+    return `
+      <div style="margin-bottom:4px;border-radius:10px;overflow:hidden;border:1px solid var(--border)">
+        <div onclick="toggleExSection('${key}')" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--surface2);cursor:pointer;user-select:none">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:3px;height:16px;border-radius:2px;background:${color}"></div>
+            <span style="font-size:13px;font-weight:600">${label}</span>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">${count} 个动作</span>
+          </div>
+          <span id="exsec-chev-${key}" style="font-size:11px;color:var(--muted);transition:transform .2s">▾</span>
+        </div>
+        <div id="exsec-body-${key}" style="padding:0 14px">${rows}</div>
+      </div>`;
   }).join('');
 }
 
