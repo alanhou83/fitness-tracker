@@ -31,6 +31,8 @@ No build steps, no `npm install`, no compilation required.
 
 ## Workflow with User
 
+**所有代码改动必须先描述方案、等用户确认后才能动手执行。** 除非用户明确说"不用确认"或"直接做"，否则任何文件修改都必须等待确认。
+
 **Always show a preview or describe the plan and wait for confirmation before modifying `index.html`.** The user is non-technical — use plain language, offer HTML preview files for UI changes, and only touch code after explicit approval.
 
 ## Architecture
@@ -38,7 +40,7 @@ No build steps, no `npm install`, no compilation required.
 The entire application lives in two files:
 
 - **`index.html`** (~2200 lines) — all HTML structure, CSS (inline `<style>`), and JavaScript (inline `<script>`)
-- **`sw.js`** — Service Worker implementing network-first caching (current version: `fitness-v9`)
+- **`sw.js`** — Service Worker implementing network-first caching (current version: `fitness-v10`)
 
 ### JavaScript Module Layout (all inside `index.html`)
 
