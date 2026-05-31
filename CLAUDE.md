@@ -93,7 +93,8 @@ All persistence uses two keys:
   defaultWeight: 75,
   proteinGoal: 110,
   defaultSets: 3,
-  customTargets: { [exerciseId]: { sets, reps } }
+  customTargets: { [exerciseId]: { sets, reps } },  // per-exercise overrides; sets=0 hides from today
+  sectionTargets: { cardio: 5, legs: 5, upper: 5, core: 5 }  // section achievement threshold (0–20); 0 hides section
 }
 ```
 
@@ -141,3 +142,5 @@ Current core exercises include `situp_crunch`（仰卧卷腹，3组×20个）add
 - **`getExGoalSets/Reps(id)`** — must use `custom.sets !== undefined` (not `custom.sets`) to correctly read stored value of `0`; using truthiness check causes 0 to fall back to default
 - **Exercise visibility** — `applyExVisibility()` shows/hides `.ex-item` elements in today's tab based on `getExGoalSets(id) === 0`; also hides the parent `.section-card` if all its exercises are hidden; called on page init, tab switch to 今日打卡, and after `adjExSets()`
 - **Sets = 0 means disabled** — setting goalSets to 0 hides the exercise from today's check-in; displayed in red in settings; `adjExSets` allows min 0 (not 1)
+- **Section target** — `getSectionTarget(section)` reads `profile.sectionTargets[section]` (default 5); used by `getSectionAchievement()`; set to 0 hides the entire section card in today's tab; adjusted via `adjSectionTarget(section, delta)` (range 0–20); UI controls are in each section header inside `renderExTargetList()`
+- **Progress circle** — `updateCircle(id, log)` uses `getExGoalSets(id) * getExGoalReps(id)` for goalTotal (NOT `ex.goalSets * ex.goalReps`); modal target text also reads from `getExGoalSets/Reps`
