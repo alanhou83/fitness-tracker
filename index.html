@@ -688,7 +688,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <div id="ex-target-body" style="display:none">
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.7">设置每个动作的目标组数和次数，长期坚持后可以逐步提高</div>
       <div style="background:var(--surface2);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--muted);line-height:1.7">
-        💡 每个动作独立设置组数和次数，默认均为3组，调整后即时保存
+        💡 每个动作独立设置组数和次数，调整后即时保存。<span style="color:var(--red)">组数设为 0</span> 可在今日打卡中隐藏该动作
       </div>
       <div id="ex-target-list"></div>
     </div>
@@ -899,12 +899,12 @@ const EX = {
 function getExGoalSets(id) {
   const profile = loadProfile();
   const custom = profile.customTargets && profile.customTargets[id];
-  return (custom && custom.sets) || EX[id].goalSets || profile.defaultSets || 3;
+  return (custom && custom.sets !== undefined) ? custom.sets : (EX[id].goalSets ?? profile.defaultSets ?? 3);
 }
 function getExGoalReps(id) {
   const profile = loadProfile();
   const custom = profile.customTargets && profile.customTargets[id];
-  return (custom && custom.reps) || EX[id].goalReps;
+  return (custom && custom.reps !== undefined) ? custom.reps : EX[id].goalReps;
 }
 function saveCustomTarget(id, sets, reps) {
   const profile = loadProfile();
@@ -1369,6 +1369,7 @@ function switchTab(tab, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('page-' + tab).classList.add('active');
+  if (tab === 'today') applyExVisibility();
   if (tab === 'summary') renderSummary();
   if (tab === 'history') renderHistory();
   if (tab === 'settings') { renderSettings(); renderExTargetList(); }
@@ -2040,48 +2041,73 @@ function setDefaultSets(n, btn) {
 }
 
 function renderExTargetList() {
-  const profile = loadProfile();
   const cont = document.getElementById('ex-target-list');
   if (!cont) return;
-  cont.innerHTML = Object.entries(EX).map(([id, ex]) => {
-    const goalReps = getExGoalReps(id);
-    const goalSets = getExGoalSets(id);
-    const unit = ex.type === 'hold' ? '秒' : '个';
-    return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
-      <div style="font-size:13px;font-weight:500;margin-bottom:8px">${ex.name}</div>
-      <div style="display:flex;gap:12px;align-items:center">
-        <div style="flex:1">
-          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:1px">组数</div>
-          <div style="display:flex;align-items:center;gap:6px">
-            <div class="num-btn" style="width:26px;height:26px;font-size:14px" onclick="adjExSets('${id}',-1)">−</div>
-            <span style="font-family:var(--mono);font-size:15px;color:var(--accent);min-width:28px;text-align:center" id="es-${id}">${goalSets}组</span>
-            <div class="num-btn" style="width:26px;height:26px;font-size:14px" onclick="adjExSets('${id}',1)">+</div>
+  const sections = [
+    { key: 'cardio', label: '热身 / 心肺' },
+    { key: 'legs',   label: '腿部训练' },
+    { key: 'upper',  label: '上肢训练' },
+    { key: 'core',   label: '核心训练' },
+  ];
+  cont.innerHTML = sections.map(({ key, label }) => {
+    const exEntries = Object.entries(EX).filter(([, ex]) => ex.section === key);
+    const rows = exEntries.map(([id, ex]) => {
+      const goalSets = getExGoalSets(id);
+      const goalReps = getExGoalReps(id);
+      const unit = ex.type === 'hold' ? '秒' : '个';
+      const setsColor = goalSets === 0 ? 'var(--red)' : 'var(--accent)';
+      const repsColor = (goalReps === 0 && ex.type !== 'run') ? 'var(--red)' : 'var(--accent)';
+      return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+        <div style="font-size:13px;font-weight:500;margin-bottom:8px">${ex.name}</div>
+        <div style="display:flex;gap:12px;align-items:center">
+          <div style="flex:1">
+            <div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:1px">组数</div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <div class="num-btn" style="width:26px;height:26px;font-size:14px" onclick="adjExSets('${id}',-1)">−</div>
+              <span style="font-family:var(--mono);font-size:15px;color:${setsColor};min-width:28px;text-align:center" id="es-${id}">${goalSets}组</span>
+              <div class="num-btn" style="width:26px;height:26px;font-size:14px" onclick="adjExSets('${id}',1)">+</div>
+            </div>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:1px">${ex.type==='hold'?'秒数':'次数'}</div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <div class="num-btn" style="width:26px;height:26px;font-size:14px" onclick="adjExReps('${id}',-1)">−</div>
+              <span style="font-family:var(--mono);font-size:15px;color:${repsColor};min-width:40px;text-align:center" id="et-${id}">${goalReps}${unit}</span>
+              <div class="num-btn" style="width:26px;height:26px;font-size:14px" onclick="adjExReps('${id}',1)">+</div>
+            </div>
           </div>
         </div>
-        <div style="flex:1">
-          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:1px">${ex.type==='hold'?'秒数':'次数'}</div>
-          <div style="display:flex;align-items:center;gap:6px">
-            <div class="num-btn" style="width:26px;height:26px;font-size:14px" onclick="adjExReps('${id}',-1)">−</div>
-            <span style="font-family:var(--mono);font-size:15px;color:var(--accent);min-width:40px;text-align:center" id="et-${id}">${goalReps}${unit}</span>
-            <div class="num-btn" style="width:26px;height:26px;font-size:14px" onclick="adjExReps('${id}',1)">+</div>
-          </div>
-        </div>
-      </div>
-    </div>`;
+      </div>`;
+    }).join('');
+    return `<div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:12px 0 4px;border-bottom:1px solid var(--border)">${label}</div>${rows}`;
   }).join('');
+}
+
+function applyExVisibility() {
+  document.querySelectorAll('#page-today .ex-item').forEach(item => {
+    const id = item.dataset.id;
+    const sets = getExGoalSets(id);
+    item.style.display = sets === 0 ? 'none' : '';
+  });
+  document.querySelectorAll('#page-today .section-card').forEach(card => {
+    const items = card.querySelectorAll('.ex-item');
+    const allHidden = Array.from(items).every(el => el.style.display === 'none');
+    card.style.display = allHidden ? 'none' : '';
+  });
 }
 
 function adjExSets(id, delta) {
   const current = getExGoalSets(id);
-  const newVal = Math.max(1, Math.min(10, current + delta));
+  const newVal = Math.max(0, Math.min(10, current + delta));
   const profile = loadProfile();
   profile.customTargets = profile.customTargets || {};
   profile.customTargets[id] = profile.customTargets[id] || {};
   profile.customTargets[id].sets = newVal;
-  profile.customTargets[id].reps = profile.customTargets[id].reps || getExGoalReps(id);
+  if (profile.customTargets[id].reps === undefined) profile.customTargets[id].reps = getExGoalReps(id);
   saveProfileStore(profile);
   const el = document.getElementById('es-' + id);
-  if (el) el.textContent = newVal + '组';
+  if (el) { el.textContent = newVal + '组'; el.style.color = newVal === 0 ? 'var(--red)' : 'var(--accent)'; }
+  applyExVisibility();
   showToast('已保存 ✓');
 }
 
@@ -2089,17 +2115,16 @@ function adjExReps(id, delta) {
   const ex = EX[id];
   const current = getExGoalReps(id);
   const step = ex.type === 'hold' ? 5 : 1;
-  const min = ex.type === 'hold' ? 5 : 1;
-  const newVal = Math.max(min, current + delta * step);
+  const newVal = Math.max(0, current + delta * step);
   const profile = loadProfile();
   profile.customTargets = profile.customTargets || {};
   profile.customTargets[id] = profile.customTargets[id] || {};
   profile.customTargets[id].reps = newVal;
-  profile.customTargets[id].sets = profile.customTargets[id].sets || getExGoalSets(id);
+  if (profile.customTargets[id].sets === undefined) profile.customTargets[id].sets = getExGoalSets(id);
   saveProfileStore(profile);
   const el = document.getElementById('et-' + id);
   const unit = ex.type === 'hold' ? '秒' : '个';
-  if (el) el.textContent = newVal + unit;
+  if (el) { el.textContent = newVal + unit; el.style.color = (newVal === 0 && ex.type !== 'run') ? 'var(--red)' : 'var(--accent)'; }
   showToast('已保存 ✓');
 }
 
@@ -2199,6 +2224,7 @@ function showToast(msg) {
 const now = new Date();
 document.getElementById('header-date').textContent = now.getFullYear() + '年' + (now.getMonth() + 1) + '月' + now.getDate() + '日 ' + ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][now.getDay()];
 initToday();
+applyExVisibility();
 </script>
 </body>
 </html>
