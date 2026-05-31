@@ -990,10 +990,17 @@ function buildAchLabel(extra, small, big, threshold) {
   return big.repeat(trophies) + small.repeat(stars);
 }
 
+function getSectionTarget(section) {
+  const profile = loadProfile();
+  const t = profile.sectionTargets && profile.sectionTargets[section];
+  return (t !== undefined) ? t : 5;
+}
+
 function getSectionAchievement(section) {
+  const target = getSectionTarget(section);
+  if (target === 0) return { met: false, label: '' };
   let tot = 0;
   Object.values(todayLog).forEach(e => { if (e.section === section) tot += e.totalSets || 0; });
-  const target = 5;
   if (tot < target) return { met: false, label: '' };
   const extra = tot - target;
   const label = buildAchLabel(extra, '🏅', '🎖️', 5);
@@ -1041,7 +1048,7 @@ function updateCircle(id, log) {
     return;
   }
 
-  const goalTotal = ex.goalSets * ex.goalReps;
+  const goalTotal = getExGoalSets(id) * getExGoalReps(id);
   let actual = ex.type === 'reps' ? (log.totalReps || 0) : ex.type === 'hold' ? (log.totalSecs || 0) : goalTotal;
   const pct = Math.min(1, actual / Math.max(1, goalTotal));
   const offset = circumference * (1 - pct);
@@ -1267,7 +1274,7 @@ function openModal(item) {
   curId = item.dataset.id;
   const ex = EX[curId]; curSets = 2;
   document.getElementById('modal-title').textContent = ex.name;
-  document.getElementById('modal-target').textContent = '目标 ' + ex.goalSets + '组×' + ex.goalReps + (ex.type === 'hold' ? '秒' : '个');
+  document.getElementById('modal-target').textContent = '目标 ' + getExGoalSets(curId) + '组×' + getExGoalReps(curId) + (ex.type === 'hold' ? '秒' : '个');
   document.getElementById('modal-note').value = '';
   // Reset feeling tags
   document.querySelectorAll('#modal-completion .feel-tag, #modal-muscle .feel-tag, #modal-other .feel-tag').forEach(b => b.classList.remove('selected'));
@@ -2061,6 +2068,7 @@ function renderExTargetList() {
   cont.innerHTML = sections.map(({ key, label, color }) => {
     const exEntries = Object.entries(EX).filter(([, ex]) => ex.section === key);
     const count = exEntries.length;
+    const sectionTargetVal = getSectionTarget(key);
     const rows = exEntries.map(([id, ex]) => {
       const goalSets = getExGoalSets(id);
       const goalReps = getExGoalReps(id);
@@ -2091,13 +2099,19 @@ function renderExTargetList() {
     }).join('');
     return `
       <div style="margin-bottom:4px;border-radius:10px;overflow:hidden;border:1px solid var(--border)">
-        <div onclick="toggleExSection('${key}')" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--surface2);cursor:pointer;user-select:none">
-          <div style="display:flex;align-items:center;gap:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--surface2)">
+          <div onclick="toggleExSection('${key}')" style="display:flex;align-items:center;gap:10px;flex:1;cursor:pointer;user-select:none">
             <div style="width:3px;height:16px;border-radius:2px;background:${color}"></div>
             <span style="font-size:13px;font-weight:600">${label}</span>
             <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">${count} 个动作</span>
+            <span id="exsec-chev-${key}" style="font-size:11px;color:var(--muted);transition:transform .2s">▾</span>
           </div>
-          <span id="exsec-chev-${key}" style="font-size:11px;color:var(--muted);transition:transform .2s">▾</span>
+          <div style="display:flex;align-items:center;gap:4px;flex-shrink:0" onclick="event.stopPropagation()">
+            <span style="font-size:10px;color:var(--muted);margin-right:2px">目标</span>
+            <div class="num-btn" style="width:22px;height:22px;font-size:13px" onclick="adjSectionTarget('${key}',-1)">−</div>
+            <span style="font-family:var(--mono);font-size:13px;color:${sectionTargetVal === 0 ? 'var(--red)' : 'var(--muted)'};min-width:30px;text-align:center" id="st-${key}">${sectionTargetVal}组</span>
+            <div class="num-btn" style="width:22px;height:22px;font-size:13px" onclick="adjSectionTarget('${key}',1)">+</div>
+          </div>
         </div>
         <div id="exsec-body-${key}" style="padding:0 14px">${rows}</div>
       </div>`;
@@ -2111,10 +2125,26 @@ function applyExVisibility() {
     item.style.display = sets === 0 ? 'none' : '';
   });
   document.querySelectorAll('#page-today .section-card').forEach(card => {
+    const section = card.dataset.section;
+    const sectionTarget = getSectionTarget(section);
+    if (sectionTarget === 0) { card.style.display = 'none'; return; }
     const items = card.querySelectorAll('.ex-item');
     const allHidden = Array.from(items).every(el => el.style.display === 'none');
     card.style.display = allHidden ? 'none' : '';
   });
+}
+
+function adjSectionTarget(section, delta) {
+  const current = getSectionTarget(section);
+  const newVal = Math.max(0, Math.min(20, current + delta));
+  const profile = loadProfile();
+  profile.sectionTargets = profile.sectionTargets || {};
+  profile.sectionTargets[section] = newVal;
+  saveProfileStore(profile);
+  const el = document.getElementById('st-' + section);
+  if (el) { el.textContent = newVal + '组'; el.style.color = newVal === 0 ? 'var(--red)' : 'var(--muted)'; }
+  applyExVisibility();
+  showToast('已保存 ✓');
 }
 
 function adjExSets(id, delta) {
