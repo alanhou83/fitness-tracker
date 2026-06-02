@@ -147,4 +147,4 @@ Current core exercises include `situp_crunch`（仰卧卷腹，3组×20个）add
 - **Progress circle** — `updateCircle(id, log)` uses `getExGoalSets(id) * getExGoalReps(id)` for goalTotal (NOT `ex.goalSets * ex.goalReps`); modal target text also reads from `getExGoalSets/Reps`
 - **Calorie formula** — `calcBurnKcal()`: reps type uses `totalReps × (getExSecPerSet(id) / getExGoalReps(id)) / 3600 × MET × weight`; hold type uses `totalSecs / 3600 × MET × weight`; run type uses `totalKm × weight × 1.036`; `getExSecPerSet(id)` reads `customTargets[id].secPerSet` with fallback to `EX[id].secPerSet`
 - **Inline edit** — `inlineEdit(span, id, field)` replaces a value span with a number input on click; fields: `'sets'`, `'reps'`, `'sec'`; saves on blur or Enter, cancels on Escape
-- **Run type special handling** — settings row shows only sets column + 「记录时长/距离」note; modal shows time(min) + distance(km) inputs; no secPerSet applies
+- **Run type special handling** — settings row shows only sets column + 「记录时长/距离」note; modal subtitle shows 「记录时长 / 距离」instead of target sets×reps; modal shows time(min) + distance(km) inputs; no secPerSet applies
