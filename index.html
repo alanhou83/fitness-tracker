@@ -1282,7 +1282,7 @@ function openModal(item) {
   curId = item.dataset.id;
   const ex = EX[curId]; curSets = 2;
   document.getElementById('modal-title').textContent = ex.name;
-  document.getElementById('modal-target').textContent = '目标 ' + getExGoalSets(curId) + '组×' + getExGoalReps(curId) + (ex.type === 'hold' ? '秒' : '个');
+  document.getElementById('modal-target').textContent = ex.type === 'run' ? '记录时长 / 距离' : '目标 ' + getExGoalSets(curId) + '组×' + getExGoalReps(curId) + (ex.type === 'hold' ? '秒' : '个');
   document.getElementById('modal-note').value = '';
   // Reset feeling tags
   document.querySelectorAll('#modal-completion .feel-tag, #modal-muscle .feel-tag, #modal-other .feel-tag').forEach(b => b.classList.remove('selected'));
