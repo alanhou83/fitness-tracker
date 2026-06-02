@@ -93,7 +93,7 @@ All persistence uses two keys:
   defaultWeight: 75,
   proteinGoal: 110,
   defaultSets: 3,
-  customTargets: { [exerciseId]: { sets, reps } },  // per-exercise overrides; sets=0 hides from today
+  customTargets: { [exerciseId]: { sets, reps, secPerSet } },  // per-exercise overrides; sets=0 hides from today
   sectionTargets: { cardio: 5, legs: 5, upper: 5, core: 5 }  // section achievement threshold (0–20); 0 hides section
 }
 ```
@@ -106,6 +106,7 @@ Exercises belong to one of four sections: `cardio`, `legs`, `upper`, `core`. Eac
 - `type` — `"reps"`, `"hold"`, or `"run"`
 - `met` — MET value for calorie calculations
 - `goalSets`, `goalReps` — default targets
+- `secPerSet` — default seconds per set (reps type only); used for calorie calculation; `hold` and `run` set to 0
 
 **Adding a new exercise** requires changes in two places:
 1. Add entry to the `EX` object in the JS section
@@ -125,7 +126,7 @@ Current core exercises include `situp_crunch`（仰卧卷腹，3组×20个）add
 ### Settings Page Structure
 
 - 个人信息 — height, weight, protein/water goals
-- 动作目标设置 — collapsible (`toggleExTargets()`), collapsed by default; rendered by `renderExTargetList()` grouped by section (cardio → legs → upper → core)
+- 动作目标设置 — collapsible (`toggleExTargets()`), collapsed by default; rendered by `renderExTargetList()` grouped by section (cardio → legs → upper → core); each section header has a collapsible toggle and section achievement threshold (−/+); each exercise row shows 3 columns: 组数 / 每组次数 / 每组用时 (reps type), or 组数 / 每组秒数 (hold type), or 组数 + note (run type); all values support inline tap-to-edit input
 - 添加到手机桌面 — PWA install instructions
 - 导出数据备份 — JSON backup + CSV (for data recovery)
 - AI 分析导出 — date-range filtered export (`setAIRange()` / `exportAIData()`) with preset buttons (7/30/90/全部) and custom date inputs; outputs structured Chinese-labeled JSON including per-exercise stats, notes history, feel history, and body metric trends
@@ -144,3 +145,6 @@ Current core exercises include `situp_crunch`（仰卧卷腹，3组×20个）add
 - **Sets = 0 means disabled** — setting goalSets to 0 hides the exercise from today's check-in; displayed in red in settings; `adjExSets` allows min 0 (not 1)
 - **Section target** — `getSectionTarget(section)` reads `profile.sectionTargets[section]` (default 5); used by `getSectionAchievement()`; set to 0 hides the entire section card in today's tab; adjusted via `adjSectionTarget(section, delta)` (range 0–20); UI controls are in each section header inside `renderExTargetList()`
 - **Progress circle** — `updateCircle(id, log)` uses `getExGoalSets(id) * getExGoalReps(id)` for goalTotal (NOT `ex.goalSets * ex.goalReps`); modal target text also reads from `getExGoalSets/Reps`
+- **Calorie formula** — `calcBurnKcal()`: reps type uses `totalReps × (getExSecPerSet(id) / getExGoalReps(id)) / 3600 × MET × weight`; hold type uses `totalSecs / 3600 × MET × weight`; run type uses `totalKm × weight × 1.036`; `getExSecPerSet(id)` reads `customTargets[id].secPerSet` with fallback to `EX[id].secPerSet`
+- **Inline edit** — `inlineEdit(span, id, field)` replaces a value span with a number input on click; fields: `'sets'`, `'reps'`, `'sec'`; saves on blur or Enter, cancels on Escape
+- **Run type special handling** — settings row shows only sets column + 「记录时长/距离」note; modal shows time(min) + distance(km) inputs; no secPerSet applies
