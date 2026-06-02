@@ -2084,37 +2084,39 @@ function renderExTargetList() {
       const setsColor = goalSets === 0 ? 'var(--red)' : 'var(--accent)';
       const repsColor = (goalReps === 0 && ex.type !== 'run') ? 'var(--red)' : 'var(--accent)';
       const secPerSet = getExSecPerSet(id);
-      const secRow = ex.type === 'reps' ? `
-        <div style="margin-top:8px">
+      const repsLabel = ex.type === 'hold' ? '每组秒数' : '每组次数';
+      const secCol = ex.type === 'reps' ? `
+        <div style="flex:1">
           <div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:1px">每组用时</div>
-          <div style="display:flex;align-items:center;gap:6px">
-            <div class="num-btn" style="width:26px;height:26px;font-size:14px" onclick="adjExSecPerSet('${id}',-5)">−</div>
-            <span style="font-family:var(--mono);font-size:15px;color:var(--accent);min-width:40px;text-align:center" id="ep-${id}">${secPerSet}秒</span>
-            <div class="num-btn" style="width:26px;height:26px;font-size:14px" onclick="adjExSecPerSet('${id}',5)">+</div>
+          <div style="display:flex;align-items:center;gap:4px">
+            <div class="num-btn" style="width:24px;height:24px;font-size:13px" onclick="adjExSecPerSet('${id}',-5)">−</div>
+            <span style="font-family:var(--mono);font-size:14px;color:var(--accent);min-width:36px;text-align:center;cursor:text" id="ep-${id}" onclick="inlineEdit(this,'${id}','sec')">${secPerSet}秒</span>
+            <div class="num-btn" style="width:24px;height:24px;font-size:13px" onclick="adjExSecPerSet('${id}',5)">+</div>
           </div>
         </div>` : '';
       return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
         <div style="font-size:13px;font-weight:500;margin-bottom:8px">${ex.name}</div>
-        <div style="display:flex;gap:12px;align-items:center">
+        <div style="display:flex;gap:6px;align-items:flex-end">
           <div style="flex:1">
             <div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:1px">组数</div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <div class="num-btn" style="width:26px;height:26px;font-size:14px" onclick="adjExSets('${id}',-1)">−</div>
-              <span style="font-family:var(--mono);font-size:15px;color:${setsColor};min-width:28px;text-align:center" id="es-${id}">${goalSets}组</span>
-              <div class="num-btn" style="width:26px;height:26px;font-size:14px" onclick="adjExSets('${id}',1)">+</div>
+            <div style="display:flex;align-items:center;gap:4px">
+              <div class="num-btn" style="width:24px;height:24px;font-size:13px" onclick="adjExSets('${id}',-1)">−</div>
+              <span style="font-family:var(--mono);font-size:14px;color:${setsColor};min-width:28px;text-align:center;cursor:text" id="es-${id}" onclick="inlineEdit(this,'${id}','sets')">${goalSets}组</span>
+              <div class="num-btn" style="width:24px;height:24px;font-size:13px" onclick="adjExSets('${id}',1)">+</div>
             </div>
           </div>
           <div style="flex:1">
-            <div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:1px">${ex.type==='hold'?'秒数':'次数'}</div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <div class="num-btn" style="width:26px;height:26px;font-size:14px" onclick="adjExReps('${id}',-1)">−</div>
-              <span style="font-family:var(--mono);font-size:15px;color:${repsColor};min-width:40px;text-align:center" id="et-${id}">${goalReps}${unit}</span>
-              <div class="num-btn" style="width:26px;height:26px;font-size:14px" onclick="adjExReps('${id}',1)">+</div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:1px">${repsLabel}</div>
+            <div style="display:flex;align-items:center;gap:4px">
+              <div class="num-btn" style="width:24px;height:24px;font-size:13px" onclick="adjExReps('${id}',-1)">−</div>
+              <span style="font-family:var(--mono);font-size:14px;color:${repsColor};min-width:36px;text-align:center;cursor:text" id="et-${id}" onclick="inlineEdit(this,'${id}','reps')">${goalReps}${unit}</span>
+              <div class="num-btn" style="width:24px;height:24px;font-size:13px" onclick="adjExReps('${id}',1)">+</div>
             </div>
           </div>
+          ${secCol}
         </div>
-        ${secRow}
       </div>`;
+    }).join('');
     }).join('');
     return `
       <div style="margin-bottom:4px;border-radius:10px;overflow:hidden;border:1px solid var(--border)">
@@ -2179,6 +2181,55 @@ function adjExSets(id, delta) {
   if (el) { el.textContent = newVal + '组'; el.style.color = newVal === 0 ? 'var(--red)' : 'var(--accent)'; }
   applyExVisibility();
   showToast('已保存 ✓');
+}
+
+function inlineEdit(span, id, field) {
+  if (span.querySelector('input')) return;
+  const ex = EX[id];
+  const unit = field === 'sets' ? '组' : field === 'sec' ? '秒' : (ex.type === 'hold' ? '秒' : '个');
+  const cur = field === 'sets' ? getExGoalSets(id) : field === 'sec' ? getExSecPerSet(id) : getExGoalReps(id);
+  const orig = span.textContent;
+  span.textContent = '';
+  const inp = document.createElement('input');
+  inp.type = 'number'; inp.value = cur;
+  inp.style.cssText = 'width:44px;background:var(--surface);border:1px solid var(--accent);border-radius:6px;color:var(--accent);font-family:var(--mono);font-size:14px;text-align:center;padding:2px 4px;-moz-appearance:textfield';
+  inp.onclick = e => e.stopPropagation();
+  const save = () => {
+    const v = parseInt(inp.value);
+    if (isNaN(v) || v < 0) { span.textContent = orig; return; }
+    if (field === 'sets') {
+      const profile = loadProfile();
+      profile.customTargets = profile.customTargets || {};
+      profile.customTargets[id] = profile.customTargets[id] || {};
+      profile.customTargets[id].sets = v;
+      saveProfileStore(profile);
+      const color = v === 0 ? 'var(--red)' : 'var(--accent)';
+      span.style.color = color;
+      span.textContent = v + '组';
+      applyExVisibility();
+    } else if (field === 'reps') {
+      const profile = loadProfile();
+      profile.customTargets = profile.customTargets || {};
+      profile.customTargets[id] = profile.customTargets[id] || {};
+      profile.customTargets[id].reps = v;
+      saveProfileStore(profile);
+      span.style.color = (v === 0 && ex.type !== 'run') ? 'var(--red)' : 'var(--accent)';
+      span.textContent = v + unit;
+    } else {
+      const val = Math.max(1, v);
+      const profile = loadProfile();
+      profile.customTargets = profile.customTargets || {};
+      profile.customTargets[id] = profile.customTargets[id] || {};
+      profile.customTargets[id].secPerSet = val;
+      saveProfileStore(profile);
+      span.textContent = val + '秒';
+    }
+    showToast('已保存 ✓');
+  };
+  inp.addEventListener('blur', save);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') { inp.blur(); } if (e.key === 'Escape') { span.textContent = orig; } });
+  span.appendChild(inp);
+  inp.focus(); inp.select();
 }
 
 function adjExSecPerSet(id, delta) {
