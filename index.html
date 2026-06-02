@@ -824,8 +824,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <div id="sec-run" style="display:none">
       <div class="mlabel">时长 / 距离</div>
       <div class="run-row">
-        <div><input class="run-input" id="run-min" type="number" placeholder="0" min="0"><div style="font-size:11px;color:var(--muted);text-align:center;margin-top:3px">分钟</div></div>
-        <div><input class="run-input" id="run-km" type="number" placeholder="0.0" min="0" step="0.1"><div style="font-size:11px;color:var(--muted);text-align:center;margin-top:3px">公里</div></div>
+        <div style="flex:1"><input class="run-input" id="run-min" type="number" placeholder="0" min="0"><div style="font-size:11px;color:var(--muted);text-align:center;margin-top:3px">分钟</div></div>
+        <div style="flex:1"><input class="run-input" id="run-km" type="number" placeholder="0.0" min="0" step="0.1"><div style="font-size:11px;color:var(--muted);text-align:center;margin-top:3px">公里</div></div>
       </div>
     </div>
     <div class="feel-section-label">完成度</div>
@@ -2085,6 +2085,22 @@ function renderExTargetList() {
       const repsColor = (goalReps === 0 && ex.type !== 'run') ? 'var(--red)' : 'var(--accent)';
       const secPerSet = getExSecPerSet(id);
       const repsLabel = ex.type === 'hold' ? '每组秒数' : '每组次数';
+      if (ex.type === 'run') {
+        return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+          <div style="font-size:13px;font-weight:500;margin-bottom:8px">${ex.name}</div>
+          <div style="display:flex;gap:6px;align-items:flex-end">
+            <div style="flex:1">
+              <div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:1px">组数</div>
+              <div style="display:flex;align-items:center;gap:4px">
+                <div class="num-btn" style="width:24px;height:24px;font-size:13px" onclick="adjExSets('${id}',-1)">−</div>
+                <span style="font-family:var(--mono);font-size:14px;color:${setsColor};min-width:28px;text-align:center;cursor:text" id="es-${id}" onclick="inlineEdit(this,'${id}','sets')">${goalSets}组</span>
+                <div class="num-btn" style="width:24px;height:24px;font-size:13px" onclick="adjExSets('${id}',1)">+</div>
+              </div>
+            </div>
+            <div style="flex:2;padding-bottom:4px;font-size:12px;color:var(--muted)">记录时长 / 距离</div>
+          </div>
+        </div>`;
+      }
       const secCol = ex.type === 'reps' ? `
         <div style="flex:1">
           <div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:1px">每组用时</div>
