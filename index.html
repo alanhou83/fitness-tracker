@@ -674,6 +674,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
         </div>
       </div>
     </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:10px;padding:10px 14px;margin-bottom:8px">
+      <div>
+        <div style="font-size:13px;color:var(--fg)">热量校正系数</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">含EPOC和过渡时间；默认1.4</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button onclick="adjBurnFactor(-0.1)" style="width:28px;height:28px;border-radius:50%;background:var(--surface);border:1px solid var(--border);color:var(--fg);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">−</button>
+        <span id="burn-factor-val" style="font-family:var(--mono);font-size:16px;color:var(--accent);min-width:30px;text-align:center">1.4</span>
+        <button onclick="adjBurnFactor(0.1)" style="width:28px;height:28px;border-radius:50%;background:var(--surface);border:1px solid var(--border);color:var(--fg);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">+</button>
+      </div>
+    </div>
     <div style="font-size:12px;color:var(--muted);line-height:1.7;background:var(--surface2);border-radius:10px;padding:10px 12px">
       💡 体重若当天未填写，自动使用默认体重。BMR和营养需求会自动重新计算。
     </div>
@@ -911,6 +922,18 @@ function getExSecPerSet(id) {
   const custom = profile.customTargets && profile.customTargets[id];
   return (custom && custom.secPerSet !== undefined) ? custom.secPerSet : (EX[id].secPerSet ?? 30);
 }
+function getBurnFactor() {
+  const profile = loadProfile();
+  return profile.burnFactor !== undefined ? profile.burnFactor : 1.4;
+}
+function adjBurnFactor(delta) {
+  const profile = loadProfile();
+  const cur = getBurnFactor();
+  const next = Math.round((cur + delta) * 10) / 10;
+  if (next < 1.0 || next > 2.0) return;
+  saveProfileStore({ ...profile, burnFactor: next });
+  document.getElementById('burn-factor-val').textContent = next.toFixed(1);
+}
 function saveCustomTarget(id, sets, reps) {
   const profile = loadProfile();
   profile.customTargets = profile.customTargets || {};
@@ -958,7 +981,7 @@ function calcBurnKcal(log, weightKg) {
       total += (met * w * durationSec) / 3600;
     }
   });
-  return Math.round(total);
+  return Math.round(total * getBurnFactor());
 }
 
 // ═══════════════════════════════
@@ -1724,6 +1747,7 @@ function renderSettings() {
   document.getElementById('set-water-goal').value = profile.waterGoal || 2000;
   document.getElementById('set-default-weight').value = profile.defaultWeight || 75;
   document.getElementById('set-protein-goal').value = profile.proteinGoal || 110;
+  document.getElementById('burn-factor-val').textContent = getBurnFactor().toFixed(1);
   renderExTargetList();
   const data = load();
   const days = Object.keys(data).filter(k => Object.keys(data[k].exercises || {}).length > 0);
