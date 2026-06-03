@@ -40,7 +40,7 @@ No build steps, no `npm install`, no compilation required.
 The entire application lives in two files:
 
 - **`index.html`** (~2200 lines) — all HTML structure, CSS (inline `<style>`), and JavaScript (inline `<script>`)
-- **`sw.js`** — Service Worker implementing network-first caching (current version: `fitness-v10`)
+- **`sw.js`** — Service Worker implementing network-first caching (current version: `fitness-v11`)
 
 ### JavaScript Module Layout (all inside `index.html`)
 
@@ -125,7 +125,7 @@ Current core exercises include `situp_crunch`（仰卧卷腹，3组×20个）add
 
 ### Settings Page Structure
 
-- 个人信息 — height, weight, protein/water goals
+- 个人信息 — height, weight, protein/water goals, burnFactor (热量校正系数)
 - 动作目标设置 — collapsible (`toggleExTargets()`), collapsed by default; rendered by `renderExTargetList()` grouped by section (cardio → legs → upper → core); each section header has a collapsible toggle and section achievement threshold (−/+); each exercise row shows 3 columns: 组数 / 每组次数 / 每组用时 (reps type), or 组数 / 每组秒数 (hold type), or 组数 + note (run type); all values support inline tap-to-edit input
 - 添加到手机桌面 — PWA install instructions
 - 导出数据备份 — JSON backup + CSV (for data recovery)
@@ -145,6 +145,7 @@ Current core exercises include `situp_crunch`（仰卧卷腹，3组×20个）add
 - **Sets = 0 means disabled** — setting goalSets to 0 hides the exercise from today's check-in; displayed in red in settings; `adjExSets` allows min 0 (not 1)
 - **Section target** — `getSectionTarget(section)` reads `profile.sectionTargets[section]` (default 5); used by `getSectionAchievement()`; set to 0 hides the entire section card in today's tab; adjusted via `adjSectionTarget(section, delta)` (range 0–20); UI controls are in each section header inside `renderExTargetList()`
 - **Progress circle** — `updateCircle(id, log)` uses `getExGoalSets(id) * getExGoalReps(id)` for goalTotal (NOT `ex.goalSets * ex.goalReps`); modal target text also reads from `getExGoalSets/Reps`
-- **Calorie formula** — `calcBurnKcal()`: reps type uses `totalReps × (getExSecPerSet(id) / getExGoalReps(id)) / 3600 × MET × weight`; hold type uses `totalSecs / 3600 × MET × weight`; run type uses `totalKm × weight × 1.036`; `getExSecPerSet(id)` reads `customTargets[id].secPerSet` with fallback to `EX[id].secPerSet`
+- **Calorie formula** — `calcBurnKcal()`: reps type uses `totalReps × (getExSecPerSet(id) / getExGoalReps(id)) / 3600 × MET × weight`; hold type uses `totalSecs / 3600 × MET × weight`; run type uses `totalKm × weight × 1.036`; final result multiplied by `getBurnFactor()` (default 1.4, stored in `ft_profile.burnFactor`); `getExSecPerSet(id)` reads `customTargets[id].secPerSet` with fallback to `EX[id].secPerSet`
+- **burnFactor** — `getBurnFactor()` reads `profile.burnFactor` (default 1.4); corrects for EPOC (~15%) and transition time (~25%) omitted by pure MET formula; `adjBurnFactor(delta)` adjusts ±0.1, range 1.0–2.0; settings UI in 个人信息 as `<span id="burn-factor-val">`; `renderSettings()` populates it
 - **Inline edit** — `inlineEdit(span, id, field)` replaces a value span with a number input on click; fields: `'sets'`, `'reps'`, `'sec'`; saves on blur or Enter, cancels on Escape
 - **Run type special handling** — settings row shows only sets column + 「记录时长/距离」note; modal subtitle shows 「记录时长 / 距离」instead of target sets×reps; modal shows time(min) + distance(km) inputs; no secPerSet applies
