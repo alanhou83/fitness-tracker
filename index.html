@@ -964,7 +964,7 @@ let todayJournals = [], curQuickEnergy = '';
 // CALORIE BURN ESTIMATE
 // ═══════════════════════════════
 function calcBurnKcal(log, weightKg) {
-  let total = 0;
+  let total = 0, runTotal = 0;
   Object.entries(log).forEach(([id, e]) => {
     const ex = EX[id]; if (!ex) return;
     const w = weightKg || 75;
@@ -972,7 +972,8 @@ function calcBurnKcal(log, weightKg) {
     if (e.type === 'hold') {
       total += (met * w * (e.totalSecs || 0)) / 3600;
     } else if (e.type === 'run') {
-      total += (e.totalKm || 0) * w * 1.036;
+      // km×kg formula is already a complete metabolic estimate; skip burnFactor
+      runTotal += (e.totalKm || 0) * w * 1.036;
     } else {
       const goalReps = getExGoalReps(id);
       const secPerSet = getExSecPerSet(id);
@@ -981,7 +982,7 @@ function calcBurnKcal(log, weightKg) {
       total += (met * w * durationSec) / 3600;
     }
   });
-  return Math.round(total * getBurnFactor());
+  return Math.round(total * getBurnFactor() + runTotal);
 }
 
 // ═══════════════════════════════
