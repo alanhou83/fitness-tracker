@@ -40,7 +40,7 @@ No build steps, no `npm install`, no compilation required.
 The entire application lives in two files:
 
 - **`index.html`** (~2200 lines) — all HTML structure, CSS (inline `<style>`), and JavaScript (inline `<script>`)
-- **`sw.js`** — Service Worker implementing network-first caching (current version: `fitness-v11`)
+- **`sw.js`** — Service Worker implementing network-first caching (current version: `fitness-v12`)
 
 ### JavaScript Module Layout (all inside `index.html`)
 
@@ -94,6 +94,9 @@ All persistence uses two keys:
   proteinGoal: 110,
   defaultSets: 3,
   burnFactor: 1.4,        // calorie correction multiplier (default 1.4); range 1.0–2.0
+  maxHR: 177,             // max heart rate bpm (default 220-43=177); changing auto-recalcs fat-burn zone
+  fatBurnLow: 106,        // fat-burn zone lower bound (default 60% of maxHR)
+  fatBurnHigh: 124,       // fat-burn zone upper bound (default 70% of maxHR)
   customTargets: { [exerciseId]: { sets, reps, secPerSet } },  // per-exercise overrides; sets=0 hides from today
   sectionTargets: { cardio: 5, legs: 5, upper: 5, core: 5 }  // section achievement threshold (0–20); 0 hides section
 }
@@ -126,7 +129,7 @@ Current core exercises include `situp_crunch`（仰卧卷腹，3组×20个）add
 
 ### Settings Page Structure
 
-- 个人信息 — height, weight, protein/water goals, burnFactor (热量校正系数)
+- 个人信息 — height, weight, protein/water goals, burnFactor (热量校正系数), maxHR + fat-burn zone (减脂心率区间 60–70% of maxHR; changing maxHR auto-recalculates bounds via `onMaxHRChange()`)
 - 动作目标设置 — collapsible (`toggleExTargets()`), collapsed by default; rendered by `renderExTargetList()` grouped by section (cardio → legs → upper → core); each section header has a collapsible toggle and section achievement threshold (−/+); each exercise row shows 3 columns: 组数 / 每组次数 / 每组用时 (reps type), or 组数 / 每组秒数 (hold type), or 组数 + note (run type); all values support inline tap-to-edit input
 - 添加到手机桌面 — PWA install instructions
 - 导出数据备份 — JSON backup + CSV (for data recovery)
