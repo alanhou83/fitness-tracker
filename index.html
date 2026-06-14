@@ -674,6 +674,29 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
         </div>
       </div>
     </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+      <div class="extra-input-box">
+        <div class="extra-input-label">最大心率</div>
+        <div class="extra-input-row">
+          <input class="extra-num-input" id="set-max-hr" type="number" placeholder="177" onchange="onMaxHRChange()">
+          <span class="extra-unit">bpm</span>
+        </div>
+      </div>
+      <div class="extra-input-box">
+        <div class="extra-input-label">减脂下限</div>
+        <div class="extra-input-row">
+          <input class="extra-num-input" id="set-fat-burn-low" type="number" placeholder="106" onchange="saveProfile()">
+          <span class="extra-unit">bpm</span>
+        </div>
+      </div>
+      <div class="extra-input-box">
+        <div class="extra-input-label">减脂上限</div>
+        <div class="extra-input-row">
+          <input class="extra-num-input" id="set-fat-burn-high" type="number" placeholder="124" onchange="saveProfile()">
+          <span class="extra-unit">bpm</span>
+        </div>
+      </div>
+    </div>
     <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:10px;padding:10px 14px;margin-bottom:8px">
       <div>
         <div style="font-size:13px;color:var(--fg)">热量校正系数</div>
@@ -1389,13 +1412,22 @@ function autoSave() {
 
 function saveDay() { autoSave(); alert('已保存！'); }
 
+function onMaxHRChange() {
+  const maxHR = parseInt(document.getElementById('set-max-hr').value) || 177;
+  document.getElementById('set-fat-burn-low').value = Math.round(maxHR * 0.6);
+  document.getElementById('set-fat-burn-high').value = Math.round(maxHR * 0.7);
+  saveProfile();
+}
 function saveProfile() {
   const existing = loadProfile();
   const h = parseFloat(document.getElementById('set-height').value) || 184;
   const wg = parseFloat(document.getElementById('set-water-goal').value) || 2000;
   const dw = parseFloat(document.getElementById('set-default-weight').value) || 75;
   const pg = parseFloat(document.getElementById('set-protein-goal').value) || 110;
-  saveProfileStore({ ...existing, height: h, waterGoal: wg, defaultWeight: dw, proteinGoal: pg });
+  const maxHR = parseInt(document.getElementById('set-max-hr').value) || 177;
+  const fatBurnLow = parseInt(document.getElementById('set-fat-burn-low').value) || Math.round(maxHR * 0.6);
+  const fatBurnHigh = parseInt(document.getElementById('set-fat-burn-high').value) || Math.round(maxHR * 0.7);
+  saveProfileStore({ ...existing, height: h, waterGoal: wg, defaultWeight: dw, proteinGoal: pg, maxHR, fatBurnLow, fatBurnHigh });
   updateWaterDisplay();
   updateAllProg();
 }
@@ -1748,6 +1780,10 @@ function renderSettings() {
   document.getElementById('set-water-goal').value = profile.waterGoal || 2000;
   document.getElementById('set-default-weight').value = profile.defaultWeight || 75;
   document.getElementById('set-protein-goal').value = profile.proteinGoal || 110;
+  const maxHR = profile.maxHR || 177;
+  document.getElementById('set-max-hr').value = maxHR;
+  document.getElementById('set-fat-burn-low').value = profile.fatBurnLow || Math.round(maxHR * 0.6);
+  document.getElementById('set-fat-burn-high').value = profile.fatBurnHigh || Math.round(maxHR * 0.7);
   document.getElementById('burn-factor-val').textContent = getBurnFactor().toFixed(1);
   renderExTargetList();
   const data = load();
